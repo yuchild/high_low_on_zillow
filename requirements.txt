@@ -6,6 +6,3 @@ requests
 pyyaml
 python-dotenv
 plotly
-geopandas
-shapely
-fiona
