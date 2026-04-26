@@ -1,0 +1,14 @@
+streamlit
+pandas
+numpy
+pyarrow
+requests
+pyyaml
+python-dotenv
+jupyter
+notebook
+matplotlib
+plotly
+geopandas
+shapely
+fiona

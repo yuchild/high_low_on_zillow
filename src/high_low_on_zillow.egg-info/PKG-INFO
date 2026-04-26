@@ -1,0 +1,59 @@
+Metadata-Version: 2.4
+Name: high_low_on_zillow
+Version: 0.1.0
+Summary: Bay Area-focused Zillow EDA and Streamlit dashboard
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: streamlit
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: pyarrow
+Requires-Dist: requests
+Requires-Dist: pyyaml
+Requires-Dist: python-dotenv
+Requires-Dist: jupyter
+Requires-Dist: notebook
+Requires-Dist: matplotlib
+Requires-Dist: plotly
+Requires-Dist: geopandas
+Requires-Dist: shapely
+Requires-Dist: fiona
+
+# high_low_on_zillow
+
+Bay Area county-first Zillow research dashboard built with Streamlit.
+
+## Phase 1
+- repo scaffold
+- config-driven project setup
+- Streamlit app entrypoint
+- notebook + src package layout
+- ready for Zillow ingestion in Phase 2
+
+## Local setup
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+PYTHONPATH=src python scripts/bootstrap_dirs.py
+PYTHONPATH=src streamlit run app.py
+
+
+---
+
+# 18. Commands to run Phase 1 end to end
+
+From repo root:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+pip install -r requirements-dev.txt
+
+touch data/raw/.gitkeep data/interim/.gitkeep data/processed/.gitkeep data/external/.gitkeep
+
+PYTHONPATH=src python scripts/bootstrap_dirs.py
+PYTHONPATH=src pytest
+PYTHONPATH=src streamlit run app.py

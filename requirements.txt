@@ -1,0 +1,11 @@
+streamlit
+pandas
+numpy
+pyarrow
+requests
+pyyaml
+python-dotenv
+plotly
+geopandas
+shapely
+fiona

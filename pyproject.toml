@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "high_low_on_zillow"
+version = "0.1.0"
+description = "Bay Area-focused Zillow EDA and Streamlit dashboard"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit",
+    "pandas",
+    "numpy",
+    "pyarrow",
+    "requests",
+    "pyyaml",
+    "python-dotenv",
+    "jupyter",
+    "notebook",
+    "matplotlib",
+    "plotly",
+    "geopandas",
+    "shapely",
+    "fiona",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,47 @@
+zillow_research:
+  enabled: true
+  base_page: "https://www.zillow.com/research/data/"
+  raw_subdir: "zillow"
+
+  datasets:
+    home_prices:
+      enabled: true
+      filename_stub: "home_prices"
+      url: "https://files.zillowstatic.com/research/public_csvs/zhvi/County_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv?t=1776883592"
+      notes: "Fill with Zillow home price dataset URL in Phase 2A"
+
+    rentals:
+      enabled: true
+      filename_stub: "rentals"
+      url: "https://files.zillowstatic.com/research/public_csvs/zori/County_zori_uc_sfrcondomfr_sm_month.csv?t=1776883593"
+      notes: "Fill with Zillow rental dataset URL in Phase 2A"
+
+    forecasts:
+      enabled: false
+      filename_stub: "forecasts"
+      url: ""
+      notes: "Enable after first ingestion flow works"
+
+    sales:
+      enabled: false
+      filename_stub: "sales"
+      url: ""
+      notes: "Enable after first ingestion flow works"
+
+    affordability:
+      enabled: false
+      filename_stub: "affordability"
+      url: ""
+      notes: "Enable after first ingestion flow works"
+
+    inventory:
+      enabled: true
+      filename_stub: "inventory"
+      url: "https://files.zillowstatic.com/research/public_csvs/invt_fs/Metro_invt_fs_uc_sfrcondo_sm_month.csv?t=1776977631"
+      notes: "Metro-level for-sale inventory dataset"
+
+    new_listings:
+      enabled: true
+      filename_stub: "new_listings"
+      url: "https://files.zillowstatic.com/research/public_csvs/sales_count_now/Metro_sales_count_now_uc_sfrcondo_month.csv?t=1776977631"
+      notes: "Metro-level for-sale inventory dataset"

@@ -1,0 +1,25 @@
+# Raw downloaded data
+data/raw/*
+!data/raw/.gitkeep
+
+# Interim data
+data/interim/*
+!data/interim/.gitkeep
+
+# Keep processed artifacts for Streamlit Cloud
+# data/processed is intentionally tracked
+
+# Keep external GeoJSON for Streamlit Cloud
+# data/external is intentionally tracked
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Env
+.venv/
+.env
+
+# Streamlit secrets
+.streamlit/secrets.toml

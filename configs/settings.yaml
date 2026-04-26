@@ -1,0 +1,41 @@
+project:
+  name: high_low_on_zillow
+  region_scope: bay_area
+  primary_geo_level: county
+  future_geo_levels:
+    - city
+    - zip
+    - metro
+
+bay_area_counties:
+  - Alameda
+  - Contra Costa
+  - Marin
+  - Napa
+  - San Francisco
+  - San Mateo
+  - Santa Clara
+  - Solano
+  - Sonoma
+
+bay_area_metros:
+  - San Francisco-Oakland-Berkeley, CA
+  - San Jose-Sunnyvale-Santa Clara, CA
+  - Santa Rosa-Petaluma, CA
+  - Vallejo, CA
+  - Napa, CA
+
+storage:
+  raw_dir: data/raw
+  interim_dir: data/interim
+  processed_dir: data/processed
+  external_dir: data/external
+
+dashboard:
+  default_metric_family: home_prices
+  supported_metric_families:
+    - home_prices
+    - rentals
+    - forecasts
+    - sales
+    - affordability
