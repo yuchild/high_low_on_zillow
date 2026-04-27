@@ -33,12 +33,6 @@ def compute_latest_kpis(
     latest_date = work["date"].max()
     latest = work.loc[work["date"] == latest_date].copy()
 
-    # compatibility for existing app code
-    if geo_col == "county":
-        latest["county"] = latest["geo_name"]
-    elif geo_col == "metro":
-        latest["metro"] = latest["geo_name"]
-
     latest = latest[
         [
             geo_col,
@@ -53,10 +47,25 @@ def compute_latest_kpis(
 
     latest = latest.rename(columns={geo_col: "geo_name"})
 
+    # compatibility for existing app code
+    if geo_col == "county":
+        latest["county"] = latest["geo_name"]
+    elif geo_col == "metro":
+        latest["metro"] = latest["geo_name"]
+
     latest["mom_pct"] = latest["mom_pct"].round(2)
     latest["yoy_pct"] = latest["yoy_pct"].round(2)
-    latest["rank_desc"] = latest[value_col].rank(method="dense", ascending=False).astype(int)
-    latest["rank_asc"] = latest[value_col].rank(method="dense", ascending=True).astype(int)
+    latest["rank_desc"] = (
+        latest[value_col]
+        .rank(method="dense", ascending=False)
+        .astype("Int64")
+    )
+
+    latest["rank_asc"] = (
+        latest[value_col]
+        .rank(method="dense", ascending=True)
+        .astype("Int64")
+)
 
     out_path = PROCESSED_DIR / output_name
     latest.to_parquet(out_path, index=False)

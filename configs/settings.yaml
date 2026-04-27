@@ -19,11 +19,11 @@ bay_area_counties:
   - Sonoma
 
 bay_area_metros:
-  - San Francisco-Oakland-Berkeley, CA
-  - San Jose-Sunnyvale-Santa Clara, CA
-  - Santa Rosa-Petaluma, CA
-  - Vallejo, CA
+  - San Francisco, CA
+  - San Jose, CA
+  - Santa Rosa, CA
   - Napa, CA
+  - Vallejo, CA
 
 storage:
   raw_dir: data/raw
