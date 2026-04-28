@@ -46,6 +46,12 @@ def get_app_data():
     }
 
 
+def format_percent(value: float) -> str:
+    if pd.isna(value):
+        return "N/A"
+    return f"{value:.2f}%"
+
+
 def format_currency(value: float, decimals: int = 0) -> str:
     if pd.isna(value):
         return "N/A"
@@ -140,6 +146,32 @@ def render_trend_chart(
     st.plotly_chart(fig, use_container_width=True)
 
 
+def render_activity_table(kpi_df: pd.DataFrame, value_col: str, label: str) -> None:
+    display_df = kpi_df[
+        ["geo_name", "date", value_col, "mom_pct", "yoy_pct", "rank_desc", "rank_asc"]
+    ].copy()
+
+    display_df = display_df.rename(
+        columns={
+            "geo_name": "metro",
+            value_col: label,
+            "rank_desc": "highest_rank",
+            "rank_asc": "lowest_rank",
+        }
+    )
+
+    display_df = display_df.sort_values("highest_rank", na_position="last")
+
+    st.dataframe(
+        display_df.style.format({
+            label: "{:,.0f}",
+            "mom_pct": lambda x: format_percent(x),
+            "yoy_pct": lambda x: format_percent(x),
+        }),
+        use_container_width=True,
+    )
+
+
 def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
     if dataset_choice == "Home Prices":
         display_df = kpi_df[
@@ -213,125 +245,192 @@ def render_county_map(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
     st.plotly_chart(fig, use_container_width=True)
 
 
+def render_market_kpi_cards(activity_kpis: pd.DataFrame, value_col: str, label: str) -> None:
+    valid = activity_kpis.dropna(subset=[value_col]).copy()
+
+    if valid.empty:
+        st.warning(f"No latest {label.lower()} data available.")
+        return
+
+    avg_value = valid[value_col].mean()
+    top_row = valid.sort_values(value_col, ascending=False).iloc[0]
+    valid_yoy = valid.dropna(subset=["yoy_pct"]).copy()
+    fastest_yoy = valid_yoy.sort_values("yoy_pct", ascending=False).iloc[0]
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(f"Avg {label}", f"{avg_value:,.0f}")
+
+    with col2:
+        st.metric(
+            f"Highest {label} Metro",
+            top_row["geo_name"],
+            delta=format_percent(top_row["yoy_pct"]),
+        )
+
+    with col3:
+        st.metric(
+            f"Fastest YoY Growth",
+            fastest_yoy["geo_name"],
+            delta=format_percent(fastest_yoy["yoy_pct"]),
+        )
+
+
 def main():
     st.title("🏠 High Low on Zillow")
     st.caption("Bay Area housing dashboard with county prices/rents and metro market activity")
 
     data = get_app_data()
-
     render_kpi_cards(data["home_kpis"], data["rent_kpis"])
 
-    st.divider()
-    st.subheader("Explore County Trends")
+    tab_prices, tab_market = st.tabs(["County Prices & Rents", "Metro Market Activity"])
 
-    dataset_choice = st.radio(
-        "Select dataset",
-        options=["Home Prices", "Rentals"],
-        horizontal=True,
-    )
+    with tab_prices:
+        st.subheader("Explore County Trends")
 
-    dataset_config = get_dataset_config(data, dataset_choice)
-    df = dataset_config["df"].copy()
-    kpi_df = dataset_config["kpi_df"].copy()
-    value_col = dataset_config["value_col"]
+        dataset_choice = st.radio(
+            "Select dataset",
+            options=["Home Prices", "Rentals"],
+            horizontal=True,
+            key="county_dataset",
+        )
 
-    available_counties = sorted(df["county"].dropna().unique().tolist())
-    selected_counties = st.multiselect(
-        "Select counties",
-        options=available_counties,
-        default=available_counties,
-    )
+        dataset_config = get_dataset_config(data, dataset_choice)
+        df = dataset_config["df"].copy()
+        kpi_df = dataset_config["kpi_df"].copy()
+        value_col = dataset_config["value_col"]
 
-    if not selected_counties:
-        st.warning("Select at least one county to display the dashboard.")
-        return
+        available_counties = sorted(df["county"].dropna().unique().tolist())
+        selected_counties = st.multiselect(
+            "Select counties",
+            options=available_counties,
+            default=available_counties,
+            key="county_selector",
+        )
 
-    df = df[df["county"].isin(selected_counties)].copy()
-    kpi_df = kpi_df[kpi_df["geo_name"].isin(selected_counties)].copy()
+        if not selected_counties:
+            st.warning("Select at least one county to display the dashboard.")
+            return
 
-    min_date = df["date"].min().date()
-    max_date = df["date"].max().date()
+        df = df[df["county"].isin(selected_counties)].copy()
+        kpi_df = kpi_df[kpi_df["geo_name"].isin(selected_counties)].copy()
 
-    date_range = st.slider(
-        "Select date range",
-        min_value=min_date,
-        max_value=max_date,
-        value=(min_date, max_date),
-    )
+        min_date = df["date"].min().date()
+        max_date = df["date"].max().date()
 
-    start_date, end_date = date_range
-    df = df[
-        (df["date"].dt.date >= start_date) &
-        (df["date"].dt.date <= end_date)
-    ].copy()
+        date_range = st.slider(
+            "Select date range",
+            min_value=min_date,
+            max_value=max_date,
+            value=(min_date, max_date),
+            key="county_date_range",
+        )
 
-    if df.empty:
-        st.warning("No data available for the selected date range.")
-        return
+        start_date, end_date = date_range
+        df = df[
+            (df["date"].dt.date >= start_date) &
+            (df["date"].dt.date <= end_date)
+        ].copy()
 
-    st.subheader("County Heat Map")
-    render_county_map(
-        kpi_df=kpi_df,
-        dataset_choice=dataset_choice,
-    )
+        if df.empty:
+            st.warning("No data available for the selected date range.")
+            return
 
-    render_trend_chart(
-        df=df,
-        value_col=value_col,
-        title=dataset_config["title"],
-        y_axis_title=dataset_config["y_axis_title"],
-    )
+        st.subheader("County Heat Map")
+        render_county_map(kpi_df=kpi_df, dataset_choice=dataset_choice)
 
-    st.subheader("Latest County Rankings")
-    render_ranking_table(kpi_df, dataset_choice)
+        render_trend_chart(
+            df=df,
+            value_col=value_col,
+            title=dataset_config["title"],
+            y_axis_title=dataset_config["y_axis_title"],
+        )
 
-    st.divider()
-    st.subheader("Market Activity")
+        st.subheader("Latest County Rankings")
+        render_ranking_table(kpi_df, dataset_choice)
 
-    activity_choice = st.radio(
-        "Select market activity dataset",
-        options=["Inventory", "Sales"],
-        horizontal=True,
-    )
+    with tab_market:
+        st.subheader("Market Activity")
 
-    if activity_choice == "Inventory":
-        activity_df = data["inventory"].copy()
-        activity_kpis = data["inventory_kpis"].copy()
-        activity_value_col = "inventory"
-    else:
-        activity_df = data["sales"].copy()
-        activity_kpis = data["sales_kpis"].copy()
-        activity_value_col = "sales"
+        activity_choice = st.radio(
+            "Select market activity dataset",
+            options=["Inventory", "Sales"],
+            horizontal=True,
+            key="activity_dataset",
+        )
 
-    metros = sorted(activity_df["geo_name"].dropna().unique().tolist())
-    selected_metros = st.multiselect(
-        "Select metros",
-        options=metros,
-        default=metros,
-    )
+        if activity_choice == "Inventory":
+            activity_df = data["inventory"].copy()
+            activity_kpis = data["inventory_kpis"].copy()
+            activity_value_col = "inventory"
+        else:
+            activity_df = data["sales"].copy()
+            activity_kpis = data["sales_kpis"].copy()
+            activity_value_col = "sales"
 
-    if selected_metros:
+        metros = sorted(activity_df["geo_name"].dropna().unique().tolist())
+        selected_metros = st.multiselect(
+            "Select metros",
+            options=metros,
+            default=metros,
+            key="metro_selector",
+        )
+
+        if not selected_metros:
+            st.warning("Select at least one metro.")
+            return
+
         activity_df = activity_df[activity_df["geo_name"].isin(selected_metros)].copy()
         activity_kpis = activity_kpis[activity_kpis["geo_name"].isin(selected_metros)].copy()
-    else:
-        st.warning("Select at least one metro.")
-        return
 
-    render_trend_chart(
-        df=activity_df,
-        value_col=activity_value_col,
-        title=f"Bay Area Metro {activity_choice}",
-        y_axis_title=activity_choice,
-        color_col="geo_name",
-    )
+        render_market_kpi_cards(
+            activity_kpis=activity_kpis,
+            value_col=activity_value_col,
+            label=activity_choice,
+        )
 
-    st.dataframe(
-        activity_kpis.style.format({
-            "mom_pct": "{:.2f}%",
-            "yoy_pct": "{:.2f}%"
-        }),
-        use_container_width=True,
-    )
+        min_activity_date = activity_df["date"].min().date()
+        max_activity_date = activity_df["date"].max().date()
+
+        activity_date_range = st.slider(
+            "Select market activity date range",
+            min_value=min_activity_date,
+            max_value=max_activity_date,
+            value=(min_activity_date, max_activity_date),
+            key="activity_date_range",
+        )
+
+        activity_start_date, activity_end_date = activity_date_range
+
+        activity_df = activity_df[
+            (activity_df["date"].dt.date >= activity_start_date) &
+            (activity_df["date"].dt.date <= activity_end_date)
+        ].copy()
+
+        if activity_df.empty:
+            st.warning("No market activity data available for the selected date range.")
+            return
+
+        render_trend_chart(
+            df=activity_df,
+            value_col=activity_value_col,
+            title=f"Bay Area Metro {activity_choice}",
+            y_axis_title=activity_choice,
+            color_col="geo_name",
+        )
+
+        if activity_kpis[activity_value_col].isna().any():
+            st.info(
+                "Some metros do not have a latest value for this metric. "
+                "They are shown at the bottom of the table."
+            )
+
+        render_activity_table(
+            kpi_df=activity_kpis,
+            value_col=activity_value_col,
+            label=activity_choice.lower(),
+        )
 
 
 if __name__ == "__main__":
