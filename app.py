@@ -282,7 +282,16 @@ def main():
     st.caption("Bay Area housing dashboard with county prices/rents and metro market activity")
 
     data = get_app_data()
+
     render_kpi_cards(data["home_kpis"], data["rent_kpis"])
+
+    latest_home_date = data["home_kpis"]["date"].max().date()
+    latest_rent_date = data["rent_kpis"]["date"].max().date()
+
+    st.caption(
+        f"Top KPI cards use latest Zillow county snapshots: "
+        f"home prices through {latest_home_date}, rents through {latest_rent_date}."
+    )
 
     tab_prices, tab_market = st.tabs(["County Prices & Rents", "Metro Market Activity"])
 
@@ -369,6 +378,14 @@ def main():
             activity_kpis = data["sales_kpis"].copy()
             activity_value_col = "sales"
 
+        latest_activity_date = activity_kpis["date"].max().date()
+
+        st.caption(
+            f"Market KPI cards and rankings use the latest available "
+            f"{activity_choice.lower()} snapshot: {latest_activity_date}. "
+            f"The date slider controls the trend chart only."
+        )
+
         metros = sorted(activity_df["geo_name"].dropna().unique().tolist())
         selected_metros = st.multiselect(
             "Select metros",
@@ -382,13 +399,9 @@ def main():
             return
 
         activity_df = activity_df[activity_df["geo_name"].isin(selected_metros)].copy()
-        activity_kpis = activity_kpis[activity_kpis["geo_name"].isin(selected_metros)].copy()
-
-        render_market_kpi_cards(
-            activity_kpis=activity_kpis,
-            value_col=activity_value_col,
-            label=activity_choice,
-        )
+        activity_kpis = activity_kpis[
+            activity_kpis["geo_name"].isin(selected_metros)
+        ].copy()
 
         min_activity_date = activity_df["date"].min().date()
         max_activity_date = activity_df["date"].max().date()
@@ -412,10 +425,16 @@ def main():
             st.warning("No market activity data available for the selected date range.")
             return
 
+        render_market_kpi_cards(
+            activity_kpis=activity_kpis,
+            value_col=activity_value_col,
+            label=activity_choice,
+        )
+
         render_trend_chart(
             df=activity_df,
             value_col=activity_value_col,
-            title=f"Bay Area Metro {activity_choice}",
+            title=f"Bay Area Metro {activity_choice}: {activity_start_date} to {activity_end_date}",
             y_axis_title=activity_choice,
             color_col="geo_name",
         )
