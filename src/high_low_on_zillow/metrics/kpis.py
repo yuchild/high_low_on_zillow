@@ -107,3 +107,15 @@ def build_sales_kpis() -> pd.DataFrame:
         value_col="sales",
         output_name="bay_area_sales_kpis.parquet",
     )
+
+
+def build_affordability_kpis() -> pd.DataFrame:
+    from high_low_on_zillow.utils.data_access import load_affordability
+
+    df = load_affordability()
+
+    return compute_latest_kpis(
+        df=df,
+        value_col="price_to_rent",
+        output_name="bay_area_affordability_kpis.parquet",
+    )

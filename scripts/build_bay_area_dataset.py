@@ -4,6 +4,7 @@ from high_low_on_zillow.processing.zillow_processor import (
     process_inventory,
     process_sales,
 )
+from high_low_on_zillow.processing.affordability import build_affordability_dataset
 
 
 def main():
@@ -22,6 +23,10 @@ def main():
     print("\nProcessing metro sales...")
     df_sales = process_sales()
     print("Rows:", len(df_sales))
+
+    print("\nProcessing affordability...")
+    df_aff = build_affordability_dataset()
+    print("Rows:", len(df_aff))
 
 
 if __name__ == "__main__":

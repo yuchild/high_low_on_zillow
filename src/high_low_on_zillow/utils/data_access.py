@@ -32,3 +32,13 @@ def load_inventory_kpis():
 
 def load_sales_kpis():
     return pd.read_parquet(PROCESSED_DIR / "bay_area_sales_kpis.parquet")
+
+
+def load_affordability():
+    return pd.read_parquet(
+        PROCESSED_DIR / "bay_area_affordability.parquet"
+    )
+
+
+def load_affordability_kpis():
+    return pd.read_parquet(PROCESSED_DIR / "bay_area_affordability_kpis.parquet")

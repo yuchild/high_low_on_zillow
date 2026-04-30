@@ -22,6 +22,8 @@ from high_low_on_zillow.utils.data_access import (
     load_sales,
     load_inventory_kpis,
     load_sales_kpis,
+    load_affordability,
+    load_affordability_kpis,
 )
 
 
@@ -43,6 +45,8 @@ def get_app_data():
         "sales": load_sales(),
         "inventory_kpis": load_inventory_kpis(),
         "sales_kpis": load_sales_kpis(),
+        "affordability": load_affordability(),
+        "affordability_kpis": load_affordability_kpis(),
     }
 
 
@@ -104,12 +108,21 @@ def get_dataset_config(data, dataset_choice: str):
             "y_axis_title": "Home Price",
         }
 
+    if dataset_choice == "Rentals":
+        return {
+            "df": data["rentals"],
+            "kpi_df": data["rent_kpis"],
+            "value_col": "rent",
+            "title": "Bay Area County Rents",
+            "y_axis_title": "Rent",
+        }
+
     return {
-        "df": data["rentals"],
-        "kpi_df": data["rent_kpis"],
-        "value_col": "rent",
-        "title": "Bay Area County Rents",
-        "y_axis_title": "Rent",
+        "df": data["affordability"],
+        "kpi_df": data["affordability_kpis"],
+        "value_col": "price_to_rent",
+        "title": "Bay Area County Price-to-Rent Ratio",
+        "y_axis_title": "Price-to-Rent Ratio",
     }
 
 
@@ -181,8 +194,20 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
             columns={
                 "geo_name": "county",
                 "home_price": "latest_home_price",
-                "rank_desc": "highest_rank",
-                "rank_asc": "lowest_rank",
+                "rank_desc": "ranking_1_highest",
+                "rank_asc": "ranking_1_lowest",
+            }
+        )
+    elif dataset_choice == "Affordability":
+        display_df = kpi_df[
+            ["geo_name", "date", "price_to_rent", "mom_pct", "yoy_pct", "rank_desc", "rank_asc"]
+        ].copy()
+        display_df = display_df.rename(
+            columns={
+                "geo_name": "county",
+                "price_to_rent": "latest_price_to_rent",
+                "rank_desc": "ranking_1_highest",
+                "rank_asc": "ranking_1_lowest",
             }
         )
     else:
@@ -193,10 +218,15 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
             columns={
                 "geo_name": "county",
                 "rent": "latest_rent",
-                "rank_desc": "highest_rank",
-                "rank_asc": "lowest_rank",
+                "rank_desc": "ranking_1_highest",
+                "rank_asc": "ranking_1_lowest",
             }
         )
+
+    st.caption(
+        "Ranking interpretation: ranking_1_highest = 1 means this county has the highest value. "
+        "ranking_1_lowest = 1 means this county has the lowest value."
+    )
 
     # keep numeric but round
     display_df["mom_pct"] = display_df["mom_pct"].round(2)
@@ -216,7 +246,15 @@ def render_county_map(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
         st.warning("No KPI data available for the selected counties.")
         return
 
-    base_value_col = "home_price" if dataset_choice == "Home Prices" else "rent"
+    if dataset_choice == "Home Prices":
+        base_value_col = "home_price"
+        base_label = "Home Price"
+    elif dataset_choice == "Rentals":
+        base_value_col = "rent"
+        base_label = "Rent"
+    else:
+        base_value_col = "price_to_rent"
+        base_label = "Price-to-Rent Ratio"
 
     map_metric = st.selectbox(
         "Map color metric",
@@ -225,7 +263,7 @@ def render_county_map(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
 
     if map_metric == "Latest Value":
         value_col = base_value_col
-        color_label = "Home Price" if dataset_choice == "Home Prices" else "Rent"
+        color_label = base_label
     elif map_metric == "MoM % Change":
         value_col = "mom_pct"
         color_label = "MoM %"
@@ -300,7 +338,7 @@ def main():
 
         dataset_choice = st.radio(
             "Select dataset",
-            options=["Home Prices", "Rentals"],
+            options=["Home Prices", "Rentals", "Affordability"],
             horizontal=True,
             key="county_dataset",
         )
