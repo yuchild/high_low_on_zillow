@@ -53,6 +53,10 @@ def get_app_data():
 def format_percent(value: float) -> str:
     if pd.isna(value):
         return "N/A"
+    if value > 0:
+        return f"{value:.2f}% ▲"
+    if value < 0:
+        return f"{value:.2f}% ▼"
     return f"{value:.2f}%"
 
 
@@ -60,6 +64,16 @@ def format_currency(value: float, decimals: int = 0) -> str:
     if pd.isna(value):
         return "N/A"
     return f"${value:,.{decimals}f}"
+
+
+def color_percent(val):
+    if pd.isna(val):
+        return ""
+    if val > 0:
+        return "color: green"
+    elif val < 0:
+        return "color: red"
+    return ""
 
 
 def render_kpi_cards(home_kpis: pd.DataFrame, rent_kpis: pd.DataFrame) -> None:
@@ -175,14 +189,14 @@ def render_activity_table(kpi_df: pd.DataFrame, value_col: str, label: str) -> N
 
     display_df = display_df.sort_values("highest_rank", na_position="last")
 
-    st.dataframe(
-        display_df.style.format({
-            label: "{:,.0f}",
-            "mom_pct": lambda x: format_percent(x),
-            "yoy_pct": lambda x: format_percent(x),
-        }),
-        use_container_width=True,
-    )
+    styled_df = display_df.style.format({
+        label: "{:,.0f}",
+        "mom_pct": lambda x: format_percent(x),
+        "yoy_pct": lambda x: format_percent(x),
+    }).map(color_percent, subset=["mom_pct", "yoy_pct"])
+
+    st.caption("Green = increase, Red = decrease (MoM / YoY)")
+    st.dataframe(styled_df, use_container_width=True)
 
 
 def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
@@ -223,22 +237,28 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
             }
         )
 
-    st.caption(
-        "Ranking interpretation: ranking_1_highest = 1 means this county has the highest value. "
-        "ranking_1_lowest = 1 means this county has the lowest value."
-    )
+    if dataset_choice == "Affordability":
+        st.caption(
+            "Ranking interpretation: ranking_1_highest = highest price-to-rent ratio "
+            "(least affordable by this proxy). ranking_1_lowest = lowest ratio "
+            "(more affordable by this proxy)."
+        )
+    else:
+        st.caption(
+            "Ranking interpretation: ranking_1_highest = 1 means this county has the highest value. "
+            "ranking_1_lowest = 1 means this county has the lowest value."
+        )
 
     # keep numeric but round
     display_df["mom_pct"] = display_df["mom_pct"].round(2)
     display_df["yoy_pct"] = display_df["yoy_pct"].round(2)
 
-    st.dataframe(
-        display_df.style.format({
-            "mom_pct": "{:.2f}%",
-            "yoy_pct": "{:.2f}%"
-        }),
-        use_container_width=True
-    )
+    styled_df = display_df.style.format({
+        "mom_pct": lambda x: format_percent(x),
+        "yoy_pct": lambda x: format_percent(x),
+    }).map(color_percent, subset=["mom_pct", "yoy_pct"])
+
+    st.dataframe(styled_df, use_container_width=True)
 
 
 def render_county_map(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
@@ -342,6 +362,12 @@ def main():
             horizontal=True,
             key="county_dataset",
         )
+
+        if dataset_choice == "Affordability":
+            st.info(
+                "Affordability uses a price-to-rent ratio: home price divided by annual rent. "
+                "Higher values suggest buying is more expensive relative to renting."
+            )
 
         dataset_config = get_dataset_config(data, dataset_choice)
         df = dataset_config["df"].copy()
