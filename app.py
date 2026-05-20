@@ -76,6 +76,30 @@ def color_percent(val):
     return ""
 
 
+def rank_badge(rank) -> str:
+    if pd.isna(rank):
+        return ""
+    if int(rank) == 1:
+        return "🥇"
+    if int(rank) == 2:
+        return "🥈"
+    if int(rank) == 3:
+        return "🥉"
+    return ""
+
+
+def affordability_badge(rank) -> str:
+    if pd.isna(rank):
+        return ""
+    if int(rank) == 1:
+        return "💰"
+    if int(rank) == 2:
+        return "💵"
+    if int(rank) == 3:
+        return "🏡"
+    return ""
+
+
 def render_kpi_cards(home_kpis: pd.DataFrame, rent_kpis: pd.DataFrame) -> None:
     latest_home_avg = home_kpis["home_price"].mean()
     latest_rent_avg = rent_kpis["rent"].mean()
@@ -187,6 +211,11 @@ def render_activity_table(kpi_df: pd.DataFrame, value_col: str, label: str) -> N
         }
     )
 
+    display_df["metro"] = display_df.apply(
+        lambda row: f"{row['metro']} {rank_badge(row['highest_rank'])}".strip(),
+        axis=1,
+    )
+
     display_df = display_df.sort_values("highest_rank", na_position="last")
 
     styled_df = display_df.style.format({
@@ -237,6 +266,19 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
             }
         )
 
+    display_df["county"] = display_df.apply(
+        lambda row: f"{row['county']} {rank_badge(row['ranking_1_highest'])}".strip(),
+        axis=1,
+    )
+
+    display_df["county"] = display_df.apply(
+        lambda row: (
+            f"{row['county']} "
+            f"{affordability_badge(row['ranking_1_lowest'])}"
+        ).strip(),
+        axis=1,
+    )
+
     if dataset_choice == "Affordability":
         st.caption(
             "Ranking interpretation: ranking_1_highest = highest price-to-rent ratio "
@@ -245,8 +287,8 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
         )
     else:
         st.caption(
-            "Ranking interpretation: ranking_1_highest = 1 means this county has the highest value. "
-            "ranking_1_lowest = 1 means this county has the lowest value."
+            "Ranking interpretation:  \nranking_1_highest = 1 means this county has the highest value or least affordable 🥇 🥈 🥉.  \n"
+            "ranking_1_lowest = 1 means this county has the lowest value or most affordable 💰 💵 🏡."
         )
 
     # keep numeric but round
