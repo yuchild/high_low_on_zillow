@@ -45,3 +45,24 @@ zillow_research:
       filename_stub: "new_listings"
       url: "https://files.zillowstatic.com/research/public_csvs/sales_count_now/Metro_sales_count_now_uc_sfrcondo_month.csv?t=1776977631"
       notes: "Metro-level for-sale inventory dataset"
+
+    zip_home_values:
+      enabled: true
+      geo_level: zip
+      value_name: home_value
+      output_filename: bay_area_zip_home_values.parquet
+      url: "https://files.zillowstatic.com/research/public_csvs/zhvi/Zip_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv?t=1779388904"
+
+    zip_home_value_forecasts:
+      enabled: true
+      geo_level: zip
+      value_name: forecast_growth
+      output_filename: bay_area_zip_forecasts.parquet
+      url: "https://files.zillowstatic.com/research/public_csvs/zhvf_growth/Zip_zhvf_growth_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv?t=1779388904"
+
+    zip_rentals:
+      enabled: true
+      geo_level: zip
+      value_name: rent
+      output_filename: bay_area_zip_rentals.parquet
+      url: "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv?t=1779388904"

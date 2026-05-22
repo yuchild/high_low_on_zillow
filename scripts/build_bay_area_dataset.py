@@ -3,6 +3,9 @@ from high_low_on_zillow.processing.zillow_processor import (
     process_rentals,
     process_inventory,
     process_sales,
+    process_zip_home_values,
+    process_zip_forecasts,
+    process_zip_rentals,
 )
 from high_low_on_zillow.processing.affordability import build_affordability_dataset
 
@@ -28,6 +31,17 @@ def main():
     df_aff = build_affordability_dataset()
     print("Rows:", len(df_aff))
 
+    print("\nProcessing ZIP home values...")
+    df_zip_home = process_zip_home_values()
+    print("Rows:", len(df_zip_home))
+
+    print("\nProcessing ZIP forecasts...")
+    df_zip_forecasts = process_zip_forecasts()
+    print("Rows:", len(df_zip_forecasts))
+
+    print("\nProcessing ZIP rentals...")
+    df_zip_rentals = process_zip_rentals()
+    print("Rows:", len(df_zip_rentals))
 
 if __name__ == "__main__":
     main()

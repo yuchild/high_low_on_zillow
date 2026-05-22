@@ -98,6 +98,8 @@ def process_zillow_file(
         df = filter_bay_area_counties(df)
     elif geo_level == "metro":
         df = filter_bay_area_metros(df)
+    elif geo_level == "zip":
+        df = filter_bay_area_zips(df)
     else:
         raise ValueError(f"Unsupported geo_level: {geo_level}")
 
@@ -107,6 +109,9 @@ def process_zillow_file(
     if geo_level == "county":
         df["geo_name"] = df["RegionName"].str.replace(" County", "", regex=False).str.strip()
         df["county"] = df["geo_name"]
+    elif geo_level == "zip":
+        df["geo_name"] = df["RegionName"].astype(str).str.strip()
+        df["zip_code"] = df["geo_name"]
     else:
         df["geo_name"] = df["RegionName"].str.strip()
         df["metro"] = df["geo_name"]
@@ -164,5 +169,54 @@ def process_sales(verbose: bool = True) -> pd.DataFrame:
         value_name="sales",
         output_filename="bay_area_sales_metro.parquet",
         geo_level="metro",
+        verbose=verbose,
+    )
+
+
+def filter_bay_area_zips(df: pd.DataFrame) -> pd.DataFrame:
+    settings = get_settings()
+    counties = set(settings["bay_area_counties"])
+
+    if "CountyName" in df.columns:
+        county = (
+            df["CountyName"]
+            .astype(str)
+            .str.replace(" County", "", regex=False)
+            .str.strip()
+        )
+        return df[county.isin(counties)].copy()
+
+    if "StateName" in df.columns:
+        return df[df["StateName"].eq("CA")].copy()
+
+    return df.iloc[0:0].copy()
+
+
+def process_zip_home_values(verbose: bool = True) -> pd.DataFrame:
+    return process_zillow_file(
+        filename="Zip_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv",
+        value_name="home_value",
+        output_filename="bay_area_zip_home_values.parquet",
+        geo_level="zip",
+        verbose=verbose,
+    )
+
+
+def process_zip_forecasts(verbose: bool = True) -> pd.DataFrame:
+    return process_zillow_file(
+        filename="Zip_zhvf_growth_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv",
+        value_name="forecast_growth",
+        output_filename="bay_area_zip_forecasts.parquet",
+        geo_level="zip",
+        verbose=verbose,
+    )
+
+
+def process_zip_rentals(verbose: bool = True) -> pd.DataFrame:
+    return process_zillow_file(
+        filename="Zip_zori_uc_sfrcondomfr_sm_month.csv",
+        value_name="rent",
+        output_filename="bay_area_zip_rentals.parquet",
+        geo_level="zip",
         verbose=verbose,
     )

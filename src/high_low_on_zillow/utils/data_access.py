@@ -42,3 +42,27 @@ def load_affordability():
 
 def load_affordability_kpis():
     return pd.read_parquet(PROCESSED_DIR / "bay_area_affordability_kpis.parquet")
+
+
+def load_zip_home_values():
+    return pd.read_parquet(PROCESSED_DIR / "bay_area_zip_home_values.parquet")
+
+
+def load_zip_rentals():
+    return pd.read_parquet(PROCESSED_DIR / "bay_area_zip_rentals.parquet")
+
+
+def load_zip_forecasts():
+    return pd.read_parquet(PROCESSED_DIR / "bay_area_zip_forecasts.parquet")
+
+
+def load_zip_home_value_kpis():
+    return pd.read_parquet(PROCESSED_DIR / "bay_area_zip_home_value_kpis.parquet")
+
+
+def load_zip_rent_kpis():
+    return pd.read_parquet(PROCESSED_DIR / "bay_area_zip_rent_kpis.parquet")
+
+
+def load_zip_forecast_kpis():
+    return pd.read_parquet(PROCESSED_DIR / "bay_area_zip_forecast_kpis.parquet")

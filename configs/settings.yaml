@@ -7,6 +7,9 @@ project:
     - zip
     - metro
 
+bay_area_states:
+  - CA
+  
 bay_area_counties:
   - Alameda
   - Contra Costa

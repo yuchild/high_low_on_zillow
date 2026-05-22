@@ -4,6 +4,9 @@ from high_low_on_zillow.metrics.kpis import (
     build_inventory_kpis,
     build_sales_kpis,
     build_affordability_kpis,
+    build_zip_home_value_kpis,
+    build_zip_rent_kpis,
+    build_zip_forecast_kpis,
 )
 
 
@@ -28,6 +31,17 @@ def main() -> None:
     df_aff = build_affordability_kpis()
     print(df_aff.head())
 
+    print("\nBuilding ZIP home value KPI table...")
+    df_zip_home = build_zip_home_value_kpis()
+    print(df_zip_home.head())
+
+    print("\nBuilding ZIP rent KPI table...")
+    df_zip_rent = build_zip_rent_kpis()
+    print(df_zip_rent.head())
+
+    print("\nBuilding ZIP forecast KPI table...")
+    df_zip_forecast = build_zip_forecast_kpis()
+    print(df_zip_forecast.head())
 
 if __name__ == "__main__":
     main()

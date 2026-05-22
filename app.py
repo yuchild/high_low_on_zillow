@@ -24,6 +24,12 @@ from high_low_on_zillow.utils.data_access import (
     load_sales_kpis,
     load_affordability,
     load_affordability_kpis,
+    load_zip_home_values,
+    load_zip_rentals,
+    load_zip_forecasts,
+    load_zip_home_value_kpis,
+    load_zip_rent_kpis,
+    load_zip_forecast_kpis,
 )
 
 
@@ -47,6 +53,12 @@ def get_app_data():
         "sales_kpis": load_sales_kpis(),
         "affordability": load_affordability(),
         "affordability_kpis": load_affordability_kpis(),
+        "zip_home_values": load_zip_home_values(),
+        "zip_rentals": load_zip_rentals(),
+        "zip_forecasts": load_zip_forecasts(),
+        "zip_home_value_kpis": load_zip_home_value_kpis(),
+        "zip_rent_kpis": load_zip_rent_kpis(),
+        "zip_forecast_kpis": load_zip_forecast_kpis(),
     }
 
 
@@ -86,6 +98,24 @@ def rank_badge(rank) -> str:
     if int(rank) == 3:
         return "🥉"
     return ""
+
+
+def rerank_selected_geos(df: pd.DataFrame, value_col: str) -> pd.DataFrame:
+    out = df.copy()
+
+    out["ranking_1_highest"] = (
+        out[value_col]
+        .rank(method="dense", ascending=False)
+        .astype("Int64")
+    )
+
+    out["ranking_1_lowest"] = (
+        out[value_col]
+        .rank(method="dense", ascending=True)
+        .astype("Int64")
+    )
+
+    return out
 
 
 def affordability_badge(rank) -> str:
@@ -161,6 +191,37 @@ def get_dataset_config(data, dataset_choice: str):
         "value_col": "price_to_rent",
         "title": "Bay Area County Price-to-Rent Ratio",
         "y_axis_title": "Price-to-Rent Ratio",
+    }
+
+
+def get_zip_dataset_config(data, zip_choice: str):
+    if zip_choice == "Home Values":
+        return {
+            "df": data["zip_home_values"],
+            "kpi_df": data["zip_home_value_kpis"],
+            "value_col": "home_value",
+            "title": "Bay Area ZIP Home Values",
+            "y_axis_title": "Home Value",
+            "has_trend": True,
+        }
+
+    if zip_choice == "Rentals":
+        return {
+            "df": data["zip_rentals"],
+            "kpi_df": data["zip_rent_kpis"],
+            "value_col": "rent",
+            "title": "Bay Area ZIP Rents",
+            "y_axis_title": "Rent",
+            "has_trend": True,
+        }
+
+    return {
+        "df": data["zip_forecasts"],
+        "kpi_df": data["zip_forecast_kpis"],
+        "value_col": "forecast_growth",
+        "title": "Bay Area ZIP Forecast Growth",
+        "y_axis_title": "Forecast Growth",
+        "has_trend": False,
     }
 
 
@@ -303,6 +364,75 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
     st.dataframe(styled_df, use_container_width=True)
 
 
+def render_zip_ranking_table(kpi_df: pd.DataFrame, value_col: str, label: str) -> None:
+    cols = ["geo_name", "date", value_col, "rank_desc", "rank_asc"]
+
+    if "mom_pct" in kpi_df.columns:
+        cols.extend(["mom_pct", "yoy_pct"])
+
+    display_df = kpi_df[cols].copy()
+
+    display_df = display_df.rename(
+        columns={
+            "geo_name": "zip_code",
+            value_col: label,
+            "rank_desc": "ranking_1_highest",
+            "rank_asc": "ranking_1_lowest",
+        }
+    )
+
+    display_df = rerank_selected_geos(display_df, label)
+
+    if label == "forecast_growth":
+        display_df["zip_code"] = display_df.apply(
+            lambda row: (
+                f"{row['zip_code']} "
+                f"{rank_badge(row['ranking_1_highest'])}"
+            ).strip(),
+            axis=1,
+        )
+
+    else:
+        display_df["zip_code"] = display_df.apply(
+            lambda row: (
+                f"{row['zip_code']} "
+                f"{rank_badge(row['ranking_1_highest'])}"
+            ).strip(),
+            axis=1,
+        )
+
+        display_df["zip_code"] = display_df.apply(
+            lambda row: (
+                f"{row['zip_code']} "
+                f"{affordability_badge(row['ranking_1_lowest'])}"
+            ).strip(),
+            axis=1,
+        )
+
+    display_df = display_df.sort_values("ranking_1_highest", na_position="last")
+
+    if label == "forecast_growth":
+        st.markdown(
+            "Ranking interpretation: ranking_1_highest = strongest projected ZIP growth 🥇 🥈 🥉.  \n"
+            "ranking_1_lowest = weakest projected ZIP growth."
+        )
+    else:
+        st.markdown(
+            "Ranking interpretation: ranking_1_highest = highest value or least affordable 🥇 🥈 🥉.  \n"
+            "ranking_1_lowest = lowest value or most affordable 💰 💵 🏡."
+        )
+
+    if "mom_pct" in display_df.columns:
+        styled_df = display_df.style.format({
+            "mom_pct": lambda x: format_percent(x),
+            "yoy_pct": lambda x: format_percent(x),
+        }).map(color_percent, subset=["mom_pct", "yoy_pct"])
+    else:
+        styled_df = display_df.style
+
+    st.dataframe(styled_df, use_container_width=True)
+
+
 def render_county_map(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
     if kpi_df.empty:
         st.warning("No KPI data available for the selected counties.")
@@ -393,7 +523,11 @@ def main():
         f"home prices through {latest_home_date}, rents through {latest_rent_date}."
     )
 
-    tab_prices, tab_market = st.tabs(["County Prices & Rents", "Metro Market Activity"])
+    tab_prices, tab_market, tab_zip = st.tabs([
+        "County Prices & Rents",
+        "Metro Market Activity",
+        "ZIP Code Detail",
+    ])
 
     with tab_prices:
         st.subheader("Explore County Trends")
@@ -555,6 +689,121 @@ def main():
             kpi_df=activity_kpis,
             value_col=activity_value_col,
             label=activity_choice.lower(),
+        )
+    
+    with tab_zip:
+        st.subheader("ZIP Code Detail")
+
+        zip_choice = st.radio(
+            "Select ZIP metric",
+            options=["Home Values", "Rentals", "Forecast Growth"],
+            horizontal=True,
+            key="zip_metric",
+        )
+
+        zip_config = get_zip_dataset_config(data, zip_choice)
+        zip_df = zip_config["df"].copy()
+        zip_kpis = zip_config["kpi_df"].copy()
+        zip_value_col = zip_config["value_col"]
+
+        st.caption(
+            "ZIP coverage varies by Zillow dataset. Some ZIP codes may appear for home values "
+            "but not for rentals or forecasts."
+        )
+
+        counties = sorted(zip_df["CountyName"].dropna().unique().tolist())
+        selected_zip_counties = st.multiselect(
+            "Filter by county",
+            options=counties,
+            default=counties,
+            key="zip_county_filter",
+        )
+
+        if not selected_zip_counties:
+            st.warning("Select at least one county.")
+            return
+
+        # Filter the source ZIP-level time series by selected counties.
+        zip_df = zip_df[zip_df["CountyName"].isin(selected_zip_counties)].copy()
+
+        # Restrict KPI rows to only ZIPs that exist in the selected counties
+        # for the selected metric.
+        valid_county_zips = (
+            zip_df["zip_code"]
+            .dropna()
+            .astype(str)
+            .unique()
+            .tolist()
+        )
+
+        zip_kpis = zip_kpis[
+            zip_kpis["geo_name"].astype(str).isin(valid_county_zips)
+        ].copy()
+
+        zip_codes = sorted(valid_county_zips)
+        default_zips = zip_codes[:10]
+
+        selected_zips = st.multiselect(
+            "Select ZIP codes",
+            options=zip_codes,
+            default=default_zips,
+            key="zip_selector",
+        )
+
+        if not selected_zips:
+            st.warning("Select at least one ZIP code.")
+            return
+
+        # Final ZIP selection filter.
+        zip_df = zip_df[
+            zip_df["zip_code"].astype(str).isin(selected_zips)
+        ].copy()
+
+        zip_kpis = zip_kpis[
+            zip_kpis["geo_name"].astype(str).isin(selected_zips)
+        ].copy()
+
+        if zip_config["has_trend"]:
+            min_zip_date = zip_df["date"].min().date()
+            max_zip_date = zip_df["date"].max().date()
+
+            zip_date_range = st.slider(
+                "Select ZIP date range",
+                min_value=min_zip_date,
+                max_value=max_zip_date,
+                value=(min_zip_date, max_zip_date),
+                key="zip_date_range",
+            )
+
+            zip_start_date, zip_end_date = zip_date_range
+
+            zip_df = zip_df[
+                (zip_df["date"].dt.date >= zip_start_date) &
+                (zip_df["date"].dt.date <= zip_end_date)
+            ].copy()
+
+            if zip_df.empty:
+                st.warning("No ZIP data available for the selected date range.")
+                return
+
+            render_trend_chart(
+                df=zip_df,
+                value_col=zip_value_col,
+                title=f"{zip_config['title']}: {zip_start_date} to {zip_end_date}",
+                y_axis_title=zip_config["y_axis_title"],
+                color_col="zip_code",
+            )
+        else:
+            st.info(
+                "Forecast growth is a forward-looking snapshot. "
+                "It is shown as a ranking table rather than a historical trend."
+            )
+
+        st.subheader("Latest ZIP Rankings")
+        render_zip_ranking_table(
+            kpi_df=zip_kpis,
+            value_col=zip_value_col,
+            label=zip_choice.lower().replace(" ", "_"),
         )
 
 

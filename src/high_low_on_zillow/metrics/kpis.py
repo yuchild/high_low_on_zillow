@@ -119,3 +119,49 @@ def build_affordability_kpis() -> pd.DataFrame:
         value_col="price_to_rent",
         output_name="bay_area_affordability_kpis.parquet",
     )
+
+
+def build_zip_home_value_kpis() -> pd.DataFrame:
+    df = pd.read_parquet(PROCESSED_DIR / "bay_area_zip_home_values.parquet")
+    return compute_latest_kpis(
+        df=df,
+        value_col="home_value",
+        output_name="bay_area_zip_home_value_kpis.parquet",
+    )
+
+
+def build_zip_rent_kpis() -> pd.DataFrame:
+    df = pd.read_parquet(PROCESSED_DIR / "bay_area_zip_rentals.parquet")
+    return compute_latest_kpis(
+        df=df,
+        value_col="rent",
+        output_name="bay_area_zip_rent_kpis.parquet",
+    )
+
+
+def build_zip_forecast_kpis() -> pd.DataFrame:
+    df = pd.read_parquet(PROCESSED_DIR / "bay_area_zip_forecasts.parquet").copy()
+
+    latest_date = df["date"].max()
+    latest = df[df["date"] == latest_date].copy()
+
+    latest = latest[
+        ["geo_name", "date", "forecast_growth"]
+    ].copy()
+
+    latest["rank_desc"] = (
+        latest["forecast_growth"]
+        .rank(method="dense", ascending=False)
+        .astype("Int64")
+    )
+
+    latest["rank_asc"] = (
+        latest["forecast_growth"]
+        .rank(method="dense", ascending=True)
+        .astype("Int64")
+    )
+
+    out_path = PROCESSED_DIR / "bay_area_zip_forecast_kpis.parquet"
+    latest.to_parquet(out_path, index=False)
+
+    return latest
