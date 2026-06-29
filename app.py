@@ -273,7 +273,11 @@ def render_activity_table(kpi_df: pd.DataFrame, value_col: str, label: str) -> N
     )
 
     display_df["metro"] = display_df.apply(
-        lambda row: f"{row['metro']} {rank_badge(row['highest_rank'])}".strip(),
+        lambda row: (
+            f"{row['metro']} "
+            f"{rank_badge(row['highest_rank'])} "
+            f"{affordability_badge(row['lowest_rank'])}"
+        ).strip(),
         axis=1,
     )
 
@@ -302,6 +306,7 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
                 "rank_asc": "ranking_1_lowest",
             }
         )
+
     elif dataset_choice == "Affordability":
         display_df = kpi_df[
             ["geo_name", "date", "price_to_rent", "mom_pct", "yoy_pct", "rank_desc", "rank_asc"]
@@ -314,6 +319,7 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
                 "rank_asc": "ranking_1_lowest",
             }
         )
+
     else:
         display_df = kpi_df[
             ["geo_name", "date", "rent", "mom_pct", "yoy_pct", "rank_desc", "rank_asc"]
@@ -327,32 +333,38 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
             }
         )
 
-    display_df["county"] = display_df.apply(
-        lambda row: f"{row['county']} {rank_badge(row['ranking_1_highest'])}".strip(),
-        axis=1,
-    )
-
-    display_df["county"] = display_df.apply(
-        lambda row: (
-            f"{row['county']} "
-            f"{affordability_badge(row['ranking_1_lowest'])}"
-        ).strip(),
-        axis=1,
-    )
-
     if dataset_choice == "Affordability":
-        st.caption(
-            "Ranking interpretation: ranking_1_highest = highest price-to-rent ratio "
-            "(least affordable by this proxy). ranking_1_lowest = lowest ratio "
-            "(more affordable by this proxy)."
-        )
-    else:
-        st.caption(
-            "Ranking interpretation:  \nranking_1_highest = 1 means this county has the highest value or least affordable 🥇 🥈 🥉.  \n"
-            "ranking_1_lowest = 1 means this county has the lowest value or most affordable 💰 💵 🏡."
+        display_df["county"] = display_df.apply(
+            lambda row: (
+                f"{row['county']} "
+                f"{rank_badge(row['ranking_1_highest'])} "
+                f"{affordability_badge(row['ranking_1_lowest'])}"
+            ).strip(),
+            axis=1,
         )
 
-    # keep numeric but round
+        st.caption(
+            "Ranking interpretation:  \n"
+            "ranking_1_highest = highest price-to-rent ratio (least affordable by this proxy 🥇 🥈 🥉)  \n"
+            "ranking_1_lowest = lowest ratio (more affordable by this proxy 💰 💵 🏡)."
+        )
+
+    else:
+        display_df["county"] = display_df.apply(
+            lambda row: (
+                f"{row['county']} "
+                f"{rank_badge(row['ranking_1_highest'])} "
+                f"{affordability_badge(row['ranking_1_lowest'])}"
+            ).strip(),
+            axis=1,
+        )
+
+        st.caption(
+            "Ranking interpretation:  \n"
+            "ranking_1_highest = 1 means this county has the highest value 🥇 🥈 🥉.  \n"
+            "ranking_1_lowest = 1 means this county has the lowest value 💰 💵 🏡."
+        )
+
     display_df["mom_pct"] = display_df["mom_pct"].round(2)
     display_df["yoy_pct"] = display_df["yoy_pct"].round(2)
 
@@ -391,19 +403,11 @@ def render_zip_ranking_table(kpi_df: pd.DataFrame, value_col: str, label: str) -
             ).strip(),
             axis=1,
         )
-
     else:
         display_df["zip_code"] = display_df.apply(
             lambda row: (
                 f"{row['zip_code']} "
-                f"{rank_badge(row['ranking_1_highest'])}"
-            ).strip(),
-            axis=1,
-        )
-
-        display_df["zip_code"] = display_df.apply(
-            lambda row: (
-                f"{row['zip_code']} "
+                f"{rank_badge(row['ranking_1_highest'])} "
                 f"{affordability_badge(row['ranking_1_lowest'])}"
             ).strip(),
             axis=1,
@@ -529,7 +533,8 @@ def main():
         "ZIP Code Detail",
     ])
 
-    with tab_prices:
+    ## County Price and Rents
+    with tab_prices:   
         st.subheader("Explore County Trends")
 
         dataset_choice = st.radio(
@@ -599,6 +604,7 @@ def main():
         st.subheader("Latest County Rankings")
         render_ranking_table(kpi_df, dataset_choice)
 
+    ## Metro Market Activity
     with tab_market:
         st.subheader("Market Activity")
 
@@ -691,6 +697,7 @@ def main():
             label=activity_choice.lower(),
         )
     
+    ## Zip Code Detail
     with tab_zip:
         st.subheader("ZIP Code Detail")
 
