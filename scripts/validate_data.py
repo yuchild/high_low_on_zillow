@@ -82,6 +82,46 @@ def main() -> None:
 
     print("All required data files and schemas validated successfully.")
 
+    validate_parquet_schema(
+        PROCESSED_DIR / "bay_area_affordability.parquet",
+        {"county", "date", "home_price", "rent", "price_to_rent", "geo_name", "geo_level"},
+    )
+
+    validate_parquet_schema(
+        PROCESSED_DIR / "bay_area_affordability_kpis.parquet",
+        {"geo_name", "date", "price_to_rent", "mom_pct", "yoy_pct", "rank_desc", "rank_asc"},
+    )
+
+    validate_parquet_schema(
+        PROCESSED_DIR / "bay_area_zip_home_values.parquet",
+        {"geo_name", "zip_code", "geo_level", "date", "home_value", "CountyName"},
+    )
+
+    validate_parquet_schema(
+        PROCESSED_DIR / "bay_area_zip_rentals.parquet",
+        {"geo_name", "zip_code", "geo_level", "date", "rent", "CountyName"},
+    )
+
+    validate_parquet_schema(
+        PROCESSED_DIR / "bay_area_zip_forecasts.parquet",
+        {"geo_name", "zip_code", "geo_level", "date", "forecast_growth", "CountyName"},
+    )
+
+    validate_parquet_schema(
+        PROCESSED_DIR / "bay_area_zip_home_value_kpis.parquet",
+        {"geo_name", "date", "home_value", "mom_pct", "yoy_pct", "rank_desc", "rank_asc"},
+    )
+
+    validate_parquet_schema(
+        PROCESSED_DIR / "bay_area_zip_rent_kpis.parquet",
+        {"geo_name", "date", "rent", "mom_pct", "yoy_pct", "rank_desc", "rank_asc"},
+    )
+
+    validate_parquet_schema(
+        PROCESSED_DIR / "bay_area_zip_forecast_kpis.parquet",
+        {"geo_name", "date", "forecast_growth", "rank_desc", "rank_asc"},
+    )
+
 
 if __name__ == "__main__":
     main()

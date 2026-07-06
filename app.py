@@ -100,6 +100,21 @@ def rank_badge(rank) -> str:
     return ""
 
 
+def append_rank_badges(
+    name: str,
+    highest_rank,
+    lowest_rank=None,
+    include_lowest_badge: bool = True,
+) -> str:
+    badges = [rank_badge(highest_rank)]
+
+    if include_lowest_badge:
+        badges.append(affordability_badge(lowest_rank))
+
+    badge_text = " ".join(badge for badge in badges if badge)
+    return f"{name} {badge_text}".strip()
+
+
 def rerank_selected_geos(df: pd.DataFrame, value_col: str) -> pd.DataFrame:
     out = df.copy()
 
@@ -273,11 +288,12 @@ def render_activity_table(kpi_df: pd.DataFrame, value_col: str, label: str) -> N
     )
 
     display_df["metro"] = display_df.apply(
-        lambda row: (
-            f"{row['metro']} "
-            f"{rank_badge(row['highest_rank'])} "
-            f"{affordability_badge(row['lowest_rank'])}"
-        ).strip(),
+        lambda row: append_rank_badges(
+            name=row["metro"],
+            highest_rank=row["highest_rank"],
+            lowest_rank=row["lowest_rank"],
+            include_lowest_badge=True,
+        ),
         axis=1,
     )
 
@@ -351,11 +367,12 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
 
     else:
         display_df["county"] = display_df.apply(
-            lambda row: (
-                f"{row['county']} "
-                f"{rank_badge(row['ranking_1_highest'])} "
-                f"{affordability_badge(row['ranking_1_lowest'])}"
-            ).strip(),
+            lambda row: append_rank_badges(
+                name=row["county"],
+                highest_rank=row["ranking_1_highest"],
+                lowest_rank=row["ranking_1_lowest"],
+                include_lowest_badge=True,
+            ),
             axis=1,
         )
 
@@ -405,11 +422,12 @@ def render_zip_ranking_table(kpi_df: pd.DataFrame, value_col: str, label: str) -
         )
     else:
         display_df["zip_code"] = display_df.apply(
-            lambda row: (
-                f"{row['zip_code']} "
-                f"{rank_badge(row['ranking_1_highest'])} "
-                f"{affordability_badge(row['ranking_1_lowest'])}"
-            ).strip(),
+            lambda row: append_rank_badges(
+                name=row["zip_code"],
+                highest_rank=row["ranking_1_highest"],
+                lowest_rank=row["ranking_1_lowest"],
+                include_lowest_badge=(label != "forecast_growth"),
+            ),
             axis=1,
         )
 

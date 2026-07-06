@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from high_low_on_zillow.paths import PROCESSED_DIR
 
 
@@ -29,6 +30,9 @@ def compute_latest_kpis(
 
     work["mom_pct"] = ((work[value_col] - work["prev_month_value"]) / work["prev_month_value"]) * 100
     work["yoy_pct"] = ((work[value_col] - work["prev_year_value"]) / work["prev_year_value"]) * 100
+
+    work["mom_pct"] = work["mom_pct"].replace([np.inf, -np.inf], np.nan)
+    work["yoy_pct"] = work["yoy_pct"].replace([np.inf, -np.inf], np.nan)
 
     latest_date = work["date"].max()
     latest = work.loc[work["date"] == latest_date].copy()
