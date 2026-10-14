@@ -87,7 +87,7 @@ def build_county_choropleth(
             "mom_pct": "MoM %",
             "yoy_pct": "YoY %",
         },
-        mapbox_style="carto-positron",
+        mapbox_style="open-street-map",
         center={"lat": 37.65, "lon": -122.1},
         zoom=7,
         opacity=0.7,
@@ -95,8 +95,12 @@ def build_county_choropleth(
     )
 
     fig.update_layout(
-        margin=dict(l=0, r=0, t=50, b=0),
-        height=600,
+        mapbox=dict(
+            style="open-street-map",
+            zoom=8,
+            center={"lat": 37.65, "lon": -122.15},
+        ),
+        dragmode="pan",
     )
 
     return fig

@@ -270,7 +270,14 @@ def render_trend_chart(
         margin=dict(l=20, r=20, t=60, b=20),
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        config={
+            "scrollZoom": True,
+            "displayModeBar": True,
+        },
+    )
 
 
 def render_activity_table(kpi_df: pd.DataFrame, value_col: str, label: str) -> None:
