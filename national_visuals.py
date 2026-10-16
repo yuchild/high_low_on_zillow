@@ -89,18 +89,22 @@ def render_national_map(selected, metric, metro_name, map_metric):
     if valid.empty:
         st.info("No values available for this map measure.")
         return
-    fig = px.choropleth_mapbox(valid,
+    # Prefer MapLibre-based choropleth_map; fall back for older Plotly releases.
+    use_maplibre = hasattr(px, "choropleth_map")
+    choropleth = px.choropleth_map if use_maplibre else px.choropleth_mapbox
+    style_arg = "map_style" if use_maplibre else "mapbox_style"
+    fig = choropleth(valid,
         geojson={"type": "FeatureCollection", "features": features},
         locations="county_fips", featureidkey="id", color="map_value",
         hover_name="label", labels={"map_value": map_metric},
-        mapbox_style="open-street-map", opacity=0.75,
+        **{style_arg: "open-street-map"}, opacity=0.75,
         title=f"{metro_name} — {metric}: {map_metric}")
     try:
         center, zoom = map_view_from_features(features)
     except ValueError as exc:
         st.warning(f"Invalid map boundaries: {exc}")
         return
-    fig.update_layout(mapbox=dict(center=center, zoom=zoom), height=590,
+    fig.update_layout(**{("map" if use_maplibre else "mapbox"): dict(center=center, zoom=zoom)}, height=590,
                       margin=dict(l=0, r=0, t=50, b=0))
     st.plotly_chart(fig, use_container_width=True, key="unified_map",
         config={"scrollZoom": True, "displayModeBar": True, "displaylogo": False})
