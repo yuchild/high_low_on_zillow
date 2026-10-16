@@ -11,6 +11,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from high_low_on_zillow.geo.county_geo import build_county_choropleth
+from national_visuals import render_national_map, render_national_chart, load_series
 
 
 from high_low_on_zillow.utils.data_access import (
@@ -246,40 +247,193 @@ def render_trend_chart(
     title: str,
     y_axis_title: str,
     color_col: str = "county",
+    focused_geo: str | None = None,
 ) -> None:
     if df.empty:
-        st.warning("No data available for the selected geography and date range.")
+        st.warning("No data available for the selected date range.")
         return
 
+    chart_df = df.sort_values([color_col, "date"]).copy()
+    chart_df[value_col] = pd.to_numeric(
+        chart_df[value_col], errors="coerce"
+    )
+
+    geographies = sorted(
+        chart_df[color_col].dropna().unique().tolist()
+    )
+
+    if not geographies:
+        st.warning("No geographic data available.")
+        return
+
+    chart_key = f"trend_{color_col}_{value_col}"
+
+    st.markdown("#### Chart Display Options")
+
+    # Row 1: Value transformation
+    price_view = st.radio(
+        "Value display",
+        ["Actual Values", "Indexed Growth"],
+        horizontal=True,
+        key=f"{chart_key}_value_view",
+    )
+
+    # Row 2: Focus controls
+    control_col1, control_col2 = st.columns([2, 1])
+
+    with control_col1:
+        display_mode = st.radio(
+            "Display mode",
+            ["Compare All", "Highlight", "Isolate"],
+            horizontal=True,
+            key=f"{chart_key}_mode",
+        )
+
+        if focused_geo == "All Counties":
+            display_mode = "Compare All"
+        elif focused_geo is not None:
+            display_mode = "Highlight"
+
+    with control_col2:
+        if focused_geo is not None:
+            focus_geo = focused_geo
+        else:
+            focus_geo = st.selectbox(
+                "Focus geography",
+                options=geographies,
+                key=f"{chart_key}_focus",
+                disabled=(display_mode == "Compare All"),
+            )
+
+    plot_col = value_col
+    plot_y_title = y_axis_title
+    plot_title = title
+
+    if price_view == "Indexed Growth":
+        # The first valid positive observation for each geography
+        # within the selected date range becomes the baseline.
+        chart_df["index_base"] = chart_df.groupby(
+            color_col
+        )[value_col].transform(
+            lambda s: s.dropna().iloc[0]
+            if not s.dropna().empty else float("nan")
+        )
+
+        # Avoid division by zero or invalid baselines.
+        valid_base = (
+            chart_df["index_base"].notna()
+            & (chart_df["index_base"] > 0)
+        )
+
+        chart_df["indexed_value"] = float("nan")
+
+        chart_df.loc[valid_base, "indexed_value"] = (
+            chart_df.loc[valid_base, value_col]
+            / chart_df.loc[valid_base, "index_base"]
+            * 100
+        )
+
+        plot_col = "indexed_value"
+        plot_y_title = "Index (Base = 100)"
+        plot_title = f"{title} — Indexed Growth"
+
+        st.caption(
+            "Each geography starts at an index of 100 using its "
+            "first available positive value within the selected date range. "
+            "An index of 120 represents 20% growth from that baseline. "
+            "Geographies may have different baseline dates."
+        )
+
     fig = px.line(
-        df,
+        chart_df,
         x="date",
-        y=value_col,
+        y=plot_col,
         color=color_col,
-        title=title,
+        title=plot_title,
         markers=False,
     )
 
-    fig.update_traces(mode="lines")
+    for trace in fig.data:
+        is_focused = str(trace.name) == str(focus_geo)
+
+        if display_mode == "Compare All":
+            trace.visible = True
+            trace.line.width = 3
+            trace.opacity = 1.0
+
+        elif display_mode == "Highlight":
+            trace.visible = True
+            trace.line.width = 5 if is_focused else 2
+            trace.opacity = 1.0 if is_focused else 0.2
+
+        elif display_mode == "Isolate":
+            trace.visible = True if is_focused else "legendonly"
+            trace.line.width = 4
+            trace.opacity = 1.0
+
+        trace.mode = "lines"
+
+        if price_view == "Indexed Growth":
+            trace.hovertemplate = (
+                "%{fullData.name}"
+                "&lt;br&gt;Date: %{x|%b %Y}"
+                "&lt;br&gt;Index: %{y:.2f}"
+                "&lt;extra&gt;&lt;/extra&gt;"
+            )
+
+    if price_view == "Indexed Growth":
+        fig.add_hline(
+            y=100,
+            line_dash="dash",
+            line_color="gray",
+            opacity=0.6,
+            annotation_text="Baseline = 100",
+        )
 
     fig.update_layout(
+        height=600,
+        dragmode="pan",
+        hovermode="closest",
+        hoverdistance=30,
         xaxis_title="Date",
-        yaxis_title=y_axis_title,
+        yaxis_title=plot_y_title,
         legend_title=color_col.replace("_", " ").title(),
-        hovermode="x unified",
-        margin=dict(l=20, r=20, t=60, b=20),
+        margin=dict(l=40, r=20, t=60, b=40),
+        hoverlabel=dict(font_size=13),
+    )
+
+    fig.update_xaxes(
+        showgrid=True,
+        rangeslider_visible=False,
+        fixedrange=False,
+    )
+
+    fig.update_yaxes(
+        showgrid=True,
+        tickformat=",.1f" if price_view == "Indexed Growth" else ",.0f",
+        fixedrange=False,
+        autorange=True,
     )
 
     st.plotly_chart(
         fig,
         use_container_width=True,
+        key=f"{chart_key}_plot",
         config={
-            "scrollZoom": True,
+            "scrollZoom": False,
             "displayModeBar": True,
+            "displaylogo": False,
+            "doubleClick": "reset",
+            "modeBarButtonsToRemove": [
+                "zoom2d",
+                "select2d",
+                "lasso2d",
+                "autoScale2d",
+            ],
         },
     )
 
-
+    
 def render_activity_table(kpi_df: pd.DataFrame, value_col: str, label: str) -> None:
     display_df = kpi_df[
         ["geo_name", "date", value_col, "mom_pct", "yoy_pct", "rank_desc", "rank_asc"]
@@ -316,7 +470,11 @@ def render_activity_table(kpi_df: pd.DataFrame, value_col: str, label: str) -> N
     st.dataframe(styled_df, use_container_width=True)
 
 
-def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
+def render_ranking_table(
+    kpi_df: pd.DataFrame,
+    dataset_choice: str,
+    focused_county: str = "All Counties",
+) -> None:
     if dataset_choice == "Home Prices":
         display_df = kpi_df[
             ["geo_name", "date", "home_price", "mom_pct", "yoy_pct", "rank_desc", "rank_asc"]
@@ -396,6 +554,23 @@ def render_ranking_table(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
         "mom_pct": lambda x: format_percent(x),
         "yoy_pct": lambda x: format_percent(x),
     }).map(color_percent, subset=["mom_pct", "yoy_pct"])
+
+    if focused_county != "All Counties":
+
+        def highlight_focused_row(row):
+            county_name = str(row["county"])
+
+            if county_name.startswith(focused_county):
+                return [
+                    "background-color: rgba(59, 130, 246, 0.18)"
+                ] * len(row)
+
+            return [""] * len(row)
+
+        styled_df = styled_df.apply(
+            highlight_focused_row,
+            axis=1,
+        )
 
     st.dataframe(styled_df, use_container_width=True)
 
@@ -500,8 +675,16 @@ def render_county_map(kpi_df: pd.DataFrame, dataset_choice: str) -> None:
         title=title,
         color_label=color_label,
     )
-
-    st.plotly_chart(fig, use_container_width=True)
+    
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        config={
+            "scrollZoom": True,
+            "displayModeBar": True,
+            "displaylogo": False,
+        },
+    )
 
 
 def render_market_kpi_cards(activity_kpis: pd.DataFrame, value_col: str, label: str) -> None:
@@ -536,307 +719,156 @@ def render_market_kpi_cards(activity_kpis: pd.DataFrame, value_col: str, label: 
         )
 
 
-def main():
+
+# National Metro Explorer: separate from the existing Bay Area data loaders.
+NATIONAL_KPI_FILES = {
+    "Home Prices": "target_metros_home_price_kpis.parquet",
+    "Rentals": "target_metros_rental_kpis.parquet",
+}
+
+NATIONAL_METRO_NAMES = {
+    "bay_area": "SF Bay Area", "new_york": "New York", "los_angeles": "Los Angeles",
+    "chicago": "Chicago", "houston": "Houston", "phoenix": "Phoenix",
+    "philadelphia": "Philadelphia", "san_antonio": "San Antonio",
+    "san_diego": "San Diego", "dallas_fort_worth": "Dallas–Fort Worth",
+    "jacksonville": "Jacksonville", "austin": "Austin",
+    "charlotte": "Charlotte", "columbus": "Columbus",
+    "indianapolis": "Indianapolis", "seattle": "Seattle",
+    "denver": "Denver", "oklahoma_city": "Oklahoma City",
+}
+
+
+@st.cache_data
+def load_national_kpis(metric: str) -> pd.DataFrame:
+    path = ROOT_DIR / "data" / "processed" / NATIONAL_KPI_FILES[metric]
+    df = pd.read_parquet(path)
+    required = {"metro_key", "county_fips", "county", "date", "value",
+                "mom_pct", "yoy_pct", "rank_desc", "rank_asc"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(f"{path.name} missing columns: {sorted(missing)}")
+    df["date"] = pd.to_datetime(df["date"])
+    return df
+
+
+BAY_COUNTY_FIPS = {
+    "Alameda": "06001", "Contra Costa": "06013", "Marin": "06041",
+    "Napa": "06055", "San Francisco": "06075", "San Mateo": "06081",
+    "Santa Clara": "06085", "Solano": "06095", "Sonoma": "06097",
+}
+
+
+def load_bay_area_unified(metric):
+    """Adapt the original Bay Area county KPIs to the national explorer schema."""
+    if metric == "Home Prices":
+        source = load_home_price_kpis().copy()
+        value_col = "home_price"
+    else:
+        source = load_rent_kpis().copy()
+        value_col = "rent"
+    source["county"] = source["geo_name"].astype(str).str.replace(
+        r"\s+County$", "", regex=True).str.strip()
+    source["county_fips"] = source["county"].map(BAY_COUNTY_FIPS)
+    source = source.dropna(subset=["county_fips"])
+    source = source.rename(columns={value_col: "value"})
+    source["metro_key"] = "bay_area"
+    return source[["metro_key", "county_fips", "county", "date", "value",
+                   "mom_pct", "yoy_pct", "rank_desc", "rank_asc"]]
+
+
+def load_bay_area_history(metric):
+    if metric == "Home Prices":
+        history, value_col = load_home_prices().copy(), "home_price"
+    else:
+        history, value_col = load_rentals().copy(), "rent"
+    history["county"] = history["county"].astype(str).str.replace(
+        r"\s+County$", "", regex=True).str.strip()
+    history["county_fips"] = history["county"].map(BAY_COUNTY_FIPS)
+    history = history.dropna(subset=["county_fips"])
+    history["date"] = pd.to_datetime(history["date"])
+    history["metro_key"] = "bay_area"
+    return history[["metro_key", "county_fips", "date", value_col]]
+
+
+def render_national_metro_explorer() -> None:
     st.title("🏠 High Low on Zillow")
-    st.caption("Bay Area housing dashboard with county prices/rents and metro market activity")
+    st.caption("Metro → metric → change view. Explore the county map, trends, then rankings.")
 
-    data = get_app_data()
+    # The selectors are global to this dashboard, not buried in individual tabs.
+    metro_options = sorted(NATIONAL_METRO_NAMES, key=lambda k: NATIONAL_METRO_NAMES[k])
+    top_metro, top_metric, top_change = st.columns([2.3, 1.5, 1.5])
+    with top_metro:
+        metro_key = st.selectbox("Metropolitan area", metro_options,
+            format_func=lambda k: NATIONAL_METRO_NAMES[k], key="unified_metro")
+    with top_metric:
+        metric = st.radio("Housing metric", ["Home Prices", "Rentals"],
+            horizontal=True, key="unified_metric")
+    with top_change:
+        change = st.selectbox("Map / table measure",
+            ["Latest Value", "MoM % Change", "YoY % Change"], key="unified_change")
 
-    render_kpi_cards(data["home_kpis"], data["rent_kpis"])
+    try:
+        df = load_bay_area_unified(metric) if metro_key == "bay_area" else load_national_kpis(metric)
+    except (FileNotFoundError, OSError, ValueError) as exc:
+        st.error(f"Cannot load county KPIs: {exc}")
+        return
+    df["county_fips"] = df["county_fips"].astype("string").str.zfill(5)
+    metro = df.loc[df["metro_key"] == metro_key].copy()
+    if metro.empty:
+        st.warning("No counties for this metro and housing metric.")
+        return
+    snapshot = metro["date"].max()
+    metro = metro.loc[metro["date"] == snapshot].copy()
+    metro_name = NATIONAL_METRO_NAMES[metro_key]
+    valid = metro.dropna(subset=["value"])
 
-    latest_home_date = data["home_kpis"]["date"].max().date()
-    latest_rent_date = data["rent_kpis"]["date"].max().date()
+    # Metro-level headline cards use all represented counties, regardless of focus.
+    def avg_change(col):
+        vals = pd.to_numeric(metro[col], errors="coerce").dropna()
+        return f"{vals.mean():+.2f}%" if not vals.empty else "N/A"
 
-    st.caption(
-        f"Top KPI cards use latest Zillow county snapshots: "
-        f"home prices through {latest_home_date}, rents through {latest_rent_date}."
-    )
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric(f"Avg county {('home value' if metric == 'Home Prices' else 'rent')}",
+              format_currency(valid["value"].mean()) if not valid.empty else "N/A")
+    k2.metric("Average county MoM", avg_change("mom_pct"))
+    k3.metric("Average county YoY", avg_change("yoy_pct"))
+    k4.metric("Counties with data", f"{len(valid)} / {len(metro)}")
+    st.caption(f"{metro_name} · {snapshot:%B %Y} · Unweighted county averages, not metro-wide Zillow indices. Growth averages are descriptive, not aggregate metro growth rates.")
 
-    tab_prices, tab_market, tab_zip = st.tabs([
-        "County Prices & Rents",
-        "Metro Market Activity",
-        "ZIP Code Detail",
-    ])
+    county_names = metro.set_index("county_fips")["county"].astype(str).to_dict()
+    options = sorted(county_names, key=lambda f: (county_names[f], f))
+    selected_fips = st.multiselect("Counties shown on map, chart and table",
+        options, default=options, format_func=lambda f: f"{county_names[f]} ({f})",
+        key=f"unified_counties_{metro_key}_{metric}")
+    if not selected_fips:
+        st.info("Select at least one county.")
+        return
+    focused = metro.loc[metro["county_fips"].isin(selected_fips)].copy()
 
-    ## County Price and Rents
-    with tab_prices:   
-        st.subheader("Explore County Trends")
+    st.subheader("1 · County heat map")
+    render_national_map(focused, metric, metro_name, change)
+    st.caption("Scroll over the map to zoom; drag to pan. Double-click or use map controls to reset the view.")
 
-        dataset_choice = st.radio(
-            "Select dataset",
-            options=["Home Prices", "Rentals", "Affordability"],
-            horizontal=True,
-            key="county_dataset",
-        )
+    st.subheader("2 · Historical trends")
+    render_national_chart(metro_key, focused, metric, metro_name,
+        history_override=load_bay_area_history(metric) if metro_key == "bay_area" else None)
 
-        if dataset_choice == "Affordability":
-            st.info(
-                "Affordability uses a price-to-rent ratio: home price divided by annual rent. "
-                "Higher values suggest buying is more expensive relative to renting."
-            )
+    st.subheader("3 · County rankings")
+    sort_col = {"Latest Value": "value", "MoM % Change": "mom_pct", "YoY % Change": "yoy_pct"}[change]
+    table = focused.sort_values(sort_col, ascending=False, na_position="last")[
+        ["county", "county_fips", "value", "mom_pct", "yoy_pct", "rank_desc"]].copy()
+    table = table.rename(columns={"county":"County", "county_fips":"FIPS",
+        "value":"Latest Value", "mom_pct":"MoM %", "yoy_pct":"YoY %", "rank_desc":"Metro Value Rank"})
+    st.dataframe(table.style.format({"Latest Value":format_currency,
+        "MoM %":format_percent, "YoY %":format_percent,
+        "Metro Value Rank":lambda x: "N/A" if pd.isna(x) else str(int(x))})
+        .map(color_percent, subset=["MoM %", "YoY %"]),
+        hide_index=True, use_container_width=True)
+    st.caption("Rank is based on latest values across the full metro. Missing observations appear as N/A. Rental coverage may be lower than home-price coverage.")
 
-        dataset_config = get_dataset_config(data, dataset_choice)
-        df = dataset_config["df"].copy()
-        kpi_df = dataset_config["kpi_df"].copy()
-        value_col = dataset_config["value_col"]
 
-        available_counties = sorted(df["county"].dropna().unique().tolist())
-        selected_counties = st.multiselect(
-            "Select counties",
-            options=available_counties,
-            default=available_counties,
-            key="county_selector",
-        )
-
-        if not selected_counties:
-            st.warning("Select at least one county to display the dashboard.")
-            return
-
-        df = df[df["county"].isin(selected_counties)].copy()
-        kpi_df = kpi_df[kpi_df["geo_name"].isin(selected_counties)].copy()
-
-        min_date = df["date"].min().date()
-        max_date = df["date"].max().date()
-
-        date_range = st.slider(
-            "Select date range",
-            min_value=min_date,
-            max_value=max_date,
-            value=(min_date, max_date),
-            key="county_date_range",
-        )
-
-        start_date, end_date = date_range
-        df = df[
-            (df["date"].dt.date >= start_date) &
-            (df["date"].dt.date <= end_date)
-        ].copy()
-
-        if df.empty:
-            st.warning("No data available for the selected date range.")
-            return
-
-        st.subheader("County Heat Map")
-        render_county_map(kpi_df=kpi_df, dataset_choice=dataset_choice)
-
-        render_trend_chart(
-            df=df,
-            value_col=value_col,
-            title=dataset_config["title"],
-            y_axis_title=dataset_config["y_axis_title"],
-        )
-
-        st.subheader("Latest County Rankings")
-        render_ranking_table(kpi_df, dataset_choice)
-
-    ## Metro Market Activity
-    with tab_market:
-        st.subheader("Market Activity")
-
-        activity_choice = st.radio(
-            "Select market activity dataset",
-            options=["Inventory", "Sales"],
-            horizontal=True,
-            key="activity_dataset",
-        )
-
-        if activity_choice == "Inventory":
-            activity_df = data["inventory"].copy()
-            activity_kpis = data["inventory_kpis"].copy()
-            activity_value_col = "inventory"
-        else:
-            activity_df = data["sales"].copy()
-            activity_kpis = data["sales_kpis"].copy()
-            activity_value_col = "sales"
-
-        latest_activity_date = activity_kpis["date"].max().date()
-
-        st.caption(
-            f"Market KPI cards and rankings use the latest available "
-            f"{activity_choice.lower()} snapshot: {latest_activity_date}. "
-            f"The date slider controls the trend chart only."
-        )
-
-        metros = sorted(activity_df["geo_name"].dropna().unique().tolist())
-        selected_metros = st.multiselect(
-            "Select metros",
-            options=metros,
-            default=metros,
-            key="metro_selector",
-        )
-
-        if not selected_metros:
-            st.warning("Select at least one metro.")
-            return
-
-        activity_df = activity_df[activity_df["geo_name"].isin(selected_metros)].copy()
-        activity_kpis = activity_kpis[
-            activity_kpis["geo_name"].isin(selected_metros)
-        ].copy()
-
-        min_activity_date = activity_df["date"].min().date()
-        max_activity_date = activity_df["date"].max().date()
-
-        activity_date_range = st.slider(
-            "Select market activity date range",
-            min_value=min_activity_date,
-            max_value=max_activity_date,
-            value=(min_activity_date, max_activity_date),
-            key="activity_date_range",
-        )
-
-        activity_start_date, activity_end_date = activity_date_range
-
-        activity_df = activity_df[
-            (activity_df["date"].dt.date >= activity_start_date) &
-            (activity_df["date"].dt.date <= activity_end_date)
-        ].copy()
-
-        if activity_df.empty:
-            st.warning("No market activity data available for the selected date range.")
-            return
-
-        render_market_kpi_cards(
-            activity_kpis=activity_kpis,
-            value_col=activity_value_col,
-            label=activity_choice,
-        )
-
-        render_trend_chart(
-            df=activity_df,
-            value_col=activity_value_col,
-            title=f"Bay Area Metro {activity_choice}: {activity_start_date} to {activity_end_date}",
-            y_axis_title=activity_choice,
-            color_col="geo_name",
-        )
-
-        if activity_kpis[activity_value_col].isna().any():
-            st.info(
-                "Some metros do not have a latest value for this metric. "
-                "They are shown at the bottom of the table."
-            )
-
-        render_activity_table(
-            kpi_df=activity_kpis,
-            value_col=activity_value_col,
-            label=activity_choice.lower(),
-        )
-    
-    ## Zip Code Detail
-    with tab_zip:
-        st.subheader("ZIP Code Detail")
-
-        zip_choice = st.radio(
-            "Select ZIP metric",
-            options=["Home Values", "Rentals", "Forecast Growth"],
-            horizontal=True,
-            key="zip_metric",
-        )
-
-        zip_config = get_zip_dataset_config(data, zip_choice)
-        zip_df = zip_config["df"].copy()
-        zip_kpis = zip_config["kpi_df"].copy()
-        zip_value_col = zip_config["value_col"]
-
-        st.caption(
-            "ZIP coverage varies by Zillow dataset. Some ZIP codes may appear for home values "
-            "but not for rentals or forecasts."
-        )
-
-        counties = sorted(zip_df["CountyName"].dropna().unique().tolist())
-        selected_zip_counties = st.multiselect(
-            "Filter by county",
-            options=counties,
-            default=counties,
-            key="zip_county_filter",
-        )
-
-        if not selected_zip_counties:
-            st.warning("Select at least one county.")
-            return
-
-        # Filter the source ZIP-level time series by selected counties.
-        zip_df = zip_df[zip_df["CountyName"].isin(selected_zip_counties)].copy()
-
-        # Restrict KPI rows to only ZIPs that exist in the selected counties
-        # for the selected metric.
-        valid_county_zips = (
-            zip_df["zip_code"]
-            .dropna()
-            .astype(str)
-            .unique()
-            .tolist()
-        )
-
-        zip_kpis = zip_kpis[
-            zip_kpis["geo_name"].astype(str).isin(valid_county_zips)
-        ].copy()
-
-        zip_codes = sorted(valid_county_zips)
-        default_zips = zip_codes[:10]
-
-        selected_zips = st.multiselect(
-            "Select ZIP codes",
-            options=zip_codes,
-            default=default_zips,
-            key="zip_selector",
-        )
-
-        if not selected_zips:
-            st.warning("Select at least one ZIP code.")
-            return
-
-        # Final ZIP selection filter.
-        zip_df = zip_df[
-            zip_df["zip_code"].astype(str).isin(selected_zips)
-        ].copy()
-
-        zip_kpis = zip_kpis[
-            zip_kpis["geo_name"].astype(str).isin(selected_zips)
-        ].copy()
-
-        if zip_config["has_trend"]:
-            min_zip_date = zip_df["date"].min().date()
-            max_zip_date = zip_df["date"].max().date()
-
-            zip_date_range = st.slider(
-                "Select ZIP date range",
-                min_value=min_zip_date,
-                max_value=max_zip_date,
-                value=(min_zip_date, max_zip_date),
-                key="zip_date_range",
-            )
-
-            zip_start_date, zip_end_date = zip_date_range
-
-            zip_df = zip_df[
-                (zip_df["date"].dt.date >= zip_start_date) &
-                (zip_df["date"].dt.date <= zip_end_date)
-            ].copy()
-
-            if zip_df.empty:
-                st.warning("No ZIP data available for the selected date range.")
-                return
-
-            render_trend_chart(
-                df=zip_df,
-                value_col=zip_value_col,
-                title=f"{zip_config['title']}: {zip_start_date} to {zip_end_date}",
-                y_axis_title=zip_config["y_axis_title"],
-                color_col="zip_code",
-            )
-        else:
-            st.info(
-                "Forecast growth is a forward-looking snapshot. "
-                "It is shown as a ranking table rather than a historical trend."
-            )
-
-        st.subheader("Latest ZIP Rankings")
-        render_zip_ranking_table(
-            kpi_df=zip_kpis,
-            value_col=zip_value_col,
-            label=zip_choice.lower().replace(" ", "_"),
-        )
+def main():
+    render_national_metro_explorer()
 
 
 if __name__ == "__main__":

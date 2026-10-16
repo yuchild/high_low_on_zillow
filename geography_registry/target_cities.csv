@@ -1,0 +1,19 @@
+city,state,metro_key,cbsa_code,verification_status
+New York,NY,new_york,35620,matched_census_2023_delineation
+Los Angeles,CA,los_angeles,31080,matched_census_2023_delineation
+Chicago,IL,chicago,16980,matched_census_2023_delineation
+Houston,TX,houston,26420,matched_census_2023_delineation
+Phoenix,AZ,phoenix,38060,matched_census_2023_delineation
+Philadelphia,PA,philadelphia,37980,matched_census_2023_delineation
+San Antonio,TX,san_antonio,41700,matched_census_2023_delineation
+San Diego,CA,san_diego,41740,matched_census_2023_delineation
+Dallas,TX,dallas_fort_worth,19100,matched_census_2023_delineation
+Fort Worth,TX,dallas_fort_worth,19100,matched_census_2023_delineation
+Jacksonville,FL,jacksonville,27260,matched_census_2023_delineation
+Austin,TX,austin,12420,matched_census_2023_delineation
+Charlotte,NC,charlotte,16740,matched_census_2023_delineation
+Columbus,OH,columbus,18140,matched_census_2023_delineation
+Indianapolis,IN,indianapolis,26900,matched_census_2023_delineation
+Seattle,WA,seattle,42660,matched_census_2023_delineation
+Denver,CO,denver,19740,matched_census_2023_delineation
+Oklahoma City,OK,oklahoma_city,36420,matched_census_2023_delineation

@@ -101,6 +101,8 @@ def build_county_choropleth(
             center={"lat": 37.65, "lon": -122.15},
         ),
         dragmode="pan",
+        height=700,
+        margin=dict(l=0, r=0, t=50, b=0),
     )
 
     return fig
