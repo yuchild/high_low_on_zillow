@@ -1,9 +1,466 @@
-metro_key,cbsa_code,metro_name,county_fips,county_name,state_name
+metro_key,cbsa_code,metro_title,county_fips,county_name,state_name
 austin,12420,"Austin-Round Rock-San Marcos, TX",48021,Bastrop County,Texas
 austin,12420,"Austin-Round Rock-San Marcos, TX",48055,Caldwell County,Texas
 austin,12420,"Austin-Round Rock-San Marcos, TX",48209,Hays County,Texas
 austin,12420,"Austin-Round Rock-San Marcos, TX",48453,Travis County,Texas
 austin,12420,"Austin-Round Rock-San Marcos, TX",48491,Williamson County,Texas
+cbsa_10420,10420,"Akron, OH",39133,Portage County,Ohio
+cbsa_10420,10420,"Akron, OH",39153,Summit County,Ohio
+cbsa_10580,10580,"Albany-Schenectady-Troy, NY",36001,Albany County,New York
+cbsa_10580,10580,"Albany-Schenectady-Troy, NY",36083,Rensselaer County,New York
+cbsa_10580,10580,"Albany-Schenectady-Troy, NY",36091,Saratoga County,New York
+cbsa_10580,10580,"Albany-Schenectady-Troy, NY",36093,Schenectady County,New York
+cbsa_10580,10580,"Albany-Schenectady-Troy, NY",36095,Schoharie County,New York
+cbsa_10740,10740,"Albuquerque, NM",35001,Bernalillo County,New Mexico
+cbsa_10740,10740,"Albuquerque, NM",35043,Sandoval County,New Mexico
+cbsa_10740,10740,"Albuquerque, NM",35057,Torrance County,New Mexico
+cbsa_10740,10740,"Albuquerque, NM",35061,Valencia County,New Mexico
+cbsa_10900,10900,"Allentown-Bethlehem-Easton, PA-NJ",34041,Warren County,New Jersey
+cbsa_10900,10900,"Allentown-Bethlehem-Easton, PA-NJ",42025,Carbon County,Pennsylvania
+cbsa_10900,10900,"Allentown-Bethlehem-Easton, PA-NJ",42077,Lehigh County,Pennsylvania
+cbsa_10900,10900,"Allentown-Bethlehem-Easton, PA-NJ",42095,Northampton County,Pennsylvania
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13013,Barrow County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13015,Bartow County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13035,Butts County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13045,Carroll County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13057,Cherokee County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13063,Clayton County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13067,Cobb County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13077,Coweta County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13085,Dawson County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13089,DeKalb County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13097,Douglas County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13113,Fayette County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13117,Forsyth County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13121,Fulton County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13135,Gwinnett County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13143,Haralson County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13149,Heard County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13151,Henry County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13159,Jasper County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13187,Lumpkin County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13199,Meriwether County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13211,Morgan County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13217,Newton County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13223,Paulding County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13227,Pickens County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13231,Pike County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13247,Rockdale County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13255,Spalding County,Georgia
+cbsa_12060,12060,"Atlanta-Sandy Springs-Roswell, GA",13297,Walton County,Georgia
+cbsa_12260,12260,"Augusta-Richmond County, GA-SC",13033,Burke County,Georgia
+cbsa_12260,12260,"Augusta-Richmond County, GA-SC",13073,Columbia County,Georgia
+cbsa_12260,12260,"Augusta-Richmond County, GA-SC",13181,Lincoln County,Georgia
+cbsa_12260,12260,"Augusta-Richmond County, GA-SC",13189,McDuffie County,Georgia
+cbsa_12260,12260,"Augusta-Richmond County, GA-SC",13245,Richmond County,Georgia
+cbsa_12260,12260,"Augusta-Richmond County, GA-SC",45003,Aiken County,South Carolina
+cbsa_12260,12260,"Augusta-Richmond County, GA-SC",45037,Edgefield County,South Carolina
+cbsa_12540,12540,"Bakersfield-Delano, CA",06029,Kern County,California
+cbsa_12580,12580,"Baltimore-Columbia-Towson, MD",24003,Anne Arundel County,Maryland
+cbsa_12580,12580,"Baltimore-Columbia-Towson, MD",24005,Baltimore County,Maryland
+cbsa_12580,12580,"Baltimore-Columbia-Towson, MD",24013,Carroll County,Maryland
+cbsa_12580,12580,"Baltimore-Columbia-Towson, MD",24025,Harford County,Maryland
+cbsa_12580,12580,"Baltimore-Columbia-Towson, MD",24027,Howard County,Maryland
+cbsa_12580,12580,"Baltimore-Columbia-Towson, MD",24035,Queen Anne's County,Maryland
+cbsa_12580,12580,"Baltimore-Columbia-Towson, MD",24510,Baltimore city,Maryland
+cbsa_12940,12940,"Baton Rouge, LA",22005,Ascension Parish,Louisiana
+cbsa_12940,12940,"Baton Rouge, LA",22007,Assumption Parish,Louisiana
+cbsa_12940,12940,"Baton Rouge, LA",22033,East Baton Rouge Parish,Louisiana
+cbsa_12940,12940,"Baton Rouge, LA",22037,East Feliciana Parish,Louisiana
+cbsa_12940,12940,"Baton Rouge, LA",22047,Iberville Parish,Louisiana
+cbsa_12940,12940,"Baton Rouge, LA",22063,Livingston Parish,Louisiana
+cbsa_12940,12940,"Baton Rouge, LA",22077,Pointe Coupee Parish,Louisiana
+cbsa_12940,12940,"Baton Rouge, LA",22091,St. Helena Parish,Louisiana
+cbsa_12940,12940,"Baton Rouge, LA",22121,West Baton Rouge Parish,Louisiana
+cbsa_12940,12940,"Baton Rouge, LA",22125,West Feliciana Parish,Louisiana
+cbsa_13820,13820,"Birmingham, AL",01007,Bibb County,Alabama
+cbsa_13820,13820,"Birmingham, AL",01009,Blount County,Alabama
+cbsa_13820,13820,"Birmingham, AL",01021,Chilton County,Alabama
+cbsa_13820,13820,"Birmingham, AL",01073,Jefferson County,Alabama
+cbsa_13820,13820,"Birmingham, AL",01115,St. Clair County,Alabama
+cbsa_13820,13820,"Birmingham, AL",01117,Shelby County,Alabama
+cbsa_13820,13820,"Birmingham, AL",01127,Walker County,Alabama
+cbsa_14260,14260,"Boise City, ID",16001,Ada County,Idaho
+cbsa_14260,14260,"Boise City, ID",16015,Boise County,Idaho
+cbsa_14260,14260,"Boise City, ID",16027,Canyon County,Idaho
+cbsa_14260,14260,"Boise City, ID",16045,Gem County,Idaho
+cbsa_14260,14260,"Boise City, ID",16073,Owyhee County,Idaho
+cbsa_14460,14460,"Boston-Cambridge-Newton, MA-NH",25009,Essex County,Massachusetts
+cbsa_14460,14460,"Boston-Cambridge-Newton, MA-NH",25017,Middlesex County,Massachusetts
+cbsa_14460,14460,"Boston-Cambridge-Newton, MA-NH",25021,Norfolk County,Massachusetts
+cbsa_14460,14460,"Boston-Cambridge-Newton, MA-NH",25023,Plymouth County,Massachusetts
+cbsa_14460,14460,"Boston-Cambridge-Newton, MA-NH",25025,Suffolk County,Massachusetts
+cbsa_14460,14460,"Boston-Cambridge-Newton, MA-NH",33015,Rockingham County,New Hampshire
+cbsa_14460,14460,"Boston-Cambridge-Newton, MA-NH",33017,Strafford County,New Hampshire
+cbsa_14860,14860,"Bridgeport-Stamford-Danbury, CT",09120,Greater Bridgeport Planning Region,Connecticut
+cbsa_14860,14860,"Bridgeport-Stamford-Danbury, CT",09190,Western Connecticut Planning Region,Connecticut
+cbsa_15380,15380,"Buffalo-Cheektowaga, NY",36029,Erie County,New York
+cbsa_15380,15380,"Buffalo-Cheektowaga, NY",36063,Niagara County,New York
+cbsa_15980,15980,"Cape Coral-Fort Myers, FL",12071,Lee County,Florida
+cbsa_16700,16700,"Charleston-North Charleston, SC",45015,Berkeley County,South Carolina
+cbsa_16700,16700,"Charleston-North Charleston, SC",45019,Charleston County,South Carolina
+cbsa_16700,16700,"Charleston-North Charleston, SC",45035,Dorchester County,South Carolina
+cbsa_16860,16860,"Chattanooga, TN-GA",13047,Catoosa County,Georgia
+cbsa_16860,16860,"Chattanooga, TN-GA",13083,Dade County,Georgia
+cbsa_16860,16860,"Chattanooga, TN-GA",13295,Walker County,Georgia
+cbsa_16860,16860,"Chattanooga, TN-GA",47065,Hamilton County,Tennessee
+cbsa_16860,16860,"Chattanooga, TN-GA",47115,Marion County,Tennessee
+cbsa_16860,16860,"Chattanooga, TN-GA",47153,Sequatchie County,Tennessee
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",18029,Dearborn County,Indiana
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",18047,Franklin County,Indiana
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",18115,Ohio County,Indiana
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",21015,Boone County,Kentucky
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",21023,Bracken County,Kentucky
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",21037,Campbell County,Kentucky
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",21077,Gallatin County,Kentucky
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",21081,Grant County,Kentucky
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",21117,Kenton County,Kentucky
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",21191,Pendleton County,Kentucky
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",39015,Brown County,Ohio
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",39017,Butler County,Ohio
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",39025,Clermont County,Ohio
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",39061,Hamilton County,Ohio
+cbsa_17140,17140,"Cincinnati, OH-KY-IN",39165,Warren County,Ohio
+cbsa_17410,17410,"Cleveland, OH",39007,Ashtabula County,Ohio
+cbsa_17410,17410,"Cleveland, OH",39035,Cuyahoga County,Ohio
+cbsa_17410,17410,"Cleveland, OH",39055,Geauga County,Ohio
+cbsa_17410,17410,"Cleveland, OH",39085,Lake County,Ohio
+cbsa_17410,17410,"Cleveland, OH",39093,Lorain County,Ohio
+cbsa_17410,17410,"Cleveland, OH",39103,Medina County,Ohio
+cbsa_17820,17820,"Colorado Springs, CO",08041,El Paso County,Colorado
+cbsa_17820,17820,"Colorado Springs, CO",08119,Teller County,Colorado
+cbsa_17900,17900,"Columbia, SC",45017,Calhoun County,South Carolina
+cbsa_17900,17900,"Columbia, SC",45039,Fairfield County,South Carolina
+cbsa_17900,17900,"Columbia, SC",45055,Kershaw County,South Carolina
+cbsa_17900,17900,"Columbia, SC",45063,Lexington County,South Carolina
+cbsa_17900,17900,"Columbia, SC",45079,Richland County,South Carolina
+cbsa_17900,17900,"Columbia, SC",45081,Saluda County,South Carolina
+cbsa_19430,19430,"Dayton-Kettering-Beavercreek, OH",39057,Greene County,Ohio
+cbsa_19430,19430,"Dayton-Kettering-Beavercreek, OH",39109,Miami County,Ohio
+cbsa_19430,19430,"Dayton-Kettering-Beavercreek, OH",39113,Montgomery County,Ohio
+cbsa_19660,19660,"Deltona-Daytona Beach-Ormond Beach, FL",12035,Flagler County,Florida
+cbsa_19660,19660,"Deltona-Daytona Beach-Ormond Beach, FL",12127,Volusia County,Florida
+cbsa_19780,19780,"Des Moines-West Des Moines, IA",19049,Dallas County,Iowa
+cbsa_19780,19780,"Des Moines-West Des Moines, IA",19077,Guthrie County,Iowa
+cbsa_19780,19780,"Des Moines-West Des Moines, IA",19099,Jasper County,Iowa
+cbsa_19780,19780,"Des Moines-West Des Moines, IA",19121,Madison County,Iowa
+cbsa_19780,19780,"Des Moines-West Des Moines, IA",19153,Polk County,Iowa
+cbsa_19780,19780,"Des Moines-West Des Moines, IA",19181,Warren County,Iowa
+cbsa_19820,19820,"Detroit-Warren-Dearborn, MI",26087,Lapeer County,Michigan
+cbsa_19820,19820,"Detroit-Warren-Dearborn, MI",26093,Livingston County,Michigan
+cbsa_19820,19820,"Detroit-Warren-Dearborn, MI",26099,Macomb County,Michigan
+cbsa_19820,19820,"Detroit-Warren-Dearborn, MI",26125,Oakland County,Michigan
+cbsa_19820,19820,"Detroit-Warren-Dearborn, MI",26147,St. Clair County,Michigan
+cbsa_19820,19820,"Detroit-Warren-Dearborn, MI",26163,Wayne County,Michigan
+cbsa_20500,20500,"Durham-Chapel Hill, NC",37037,Chatham County,North Carolina
+cbsa_20500,20500,"Durham-Chapel Hill, NC",37063,Durham County,North Carolina
+cbsa_20500,20500,"Durham-Chapel Hill, NC",37135,Orange County,North Carolina
+cbsa_20500,20500,"Durham-Chapel Hill, NC",37145,Person County,North Carolina
+cbsa_21340,21340,"El Paso, TX",48141,El Paso County,Texas
+cbsa_21340,21340,"El Paso, TX",48229,Hudspeth County,Texas
+cbsa_22220,22220,"Fayetteville-Springdale-Rogers, AR",05007,Benton County,Arkansas
+cbsa_22220,22220,"Fayetteville-Springdale-Rogers, AR",05087,Madison County,Arkansas
+cbsa_22220,22220,"Fayetteville-Springdale-Rogers, AR",05143,Washington County,Arkansas
+cbsa_23420,23420,"Fresno, CA",06019,Fresno County,California
+cbsa_23420,23420,"Fresno, CA",06039,Madera County,California
+cbsa_24340,24340,"Grand Rapids-Wyoming-Kentwood, MI",26015,Barry County,Michigan
+cbsa_24340,24340,"Grand Rapids-Wyoming-Kentwood, MI",26067,Ionia County,Michigan
+cbsa_24340,24340,"Grand Rapids-Wyoming-Kentwood, MI",26081,Kent County,Michigan
+cbsa_24340,24340,"Grand Rapids-Wyoming-Kentwood, MI",26117,Montcalm County,Michigan
+cbsa_24340,24340,"Grand Rapids-Wyoming-Kentwood, MI",26139,Ottawa County,Michigan
+cbsa_24660,24660,"Greensboro-High Point, NC",37081,Guilford County,North Carolina
+cbsa_24660,24660,"Greensboro-High Point, NC",37151,Randolph County,North Carolina
+cbsa_24660,24660,"Greensboro-High Point, NC",37157,Rockingham County,North Carolina
+cbsa_24860,24860,"Greenville-Anderson-Greer, SC",45007,Anderson County,South Carolina
+cbsa_24860,24860,"Greenville-Anderson-Greer, SC",45045,Greenville County,South Carolina
+cbsa_24860,24860,"Greenville-Anderson-Greer, SC",45059,Laurens County,South Carolina
+cbsa_24860,24860,"Greenville-Anderson-Greer, SC",45077,Pickens County,South Carolina
+cbsa_25420,25420,"Harrisburg-Carlisle, PA",42041,Cumberland County,Pennsylvania
+cbsa_25420,25420,"Harrisburg-Carlisle, PA",42043,Dauphin County,Pennsylvania
+cbsa_25420,25420,"Harrisburg-Carlisle, PA",42099,Perry County,Pennsylvania
+cbsa_25540,25540,"Hartford-West Hartford-East Hartford, CT",09110,Capitol Planning Region,Connecticut
+cbsa_25540,25540,"Hartford-West Hartford-East Hartford, CT",09130,Lower Connecticut River Valley Planning Region,Connecticut
+cbsa_27140,27140,"Jackson, MS",28029,Copiah County,Mississippi
+cbsa_27140,27140,"Jackson, MS",28049,Hinds County,Mississippi
+cbsa_27140,27140,"Jackson, MS",28051,Holmes County,Mississippi
+cbsa_27140,27140,"Jackson, MS",28089,Madison County,Mississippi
+cbsa_27140,27140,"Jackson, MS",28121,Rankin County,Mississippi
+cbsa_27140,27140,"Jackson, MS",28123,Scott County,Mississippi
+cbsa_27140,27140,"Jackson, MS",28127,Simpson County,Mississippi
+cbsa_27140,27140,"Jackson, MS",28163,Yazoo County,Mississippi
+cbsa_28140,28140,"Kansas City, MO-KS",20091,Johnson County,Kansas
+cbsa_28140,28140,"Kansas City, MO-KS",20103,Leavenworth County,Kansas
+cbsa_28140,28140,"Kansas City, MO-KS",20107,Linn County,Kansas
+cbsa_28140,28140,"Kansas City, MO-KS",20121,Miami County,Kansas
+cbsa_28140,28140,"Kansas City, MO-KS",20209,Wyandotte County,Kansas
+cbsa_28140,28140,"Kansas City, MO-KS",29013,Bates County,Missouri
+cbsa_28140,28140,"Kansas City, MO-KS",29025,Caldwell County,Missouri
+cbsa_28140,28140,"Kansas City, MO-KS",29037,Cass County,Missouri
+cbsa_28140,28140,"Kansas City, MO-KS",29047,Clay County,Missouri
+cbsa_28140,28140,"Kansas City, MO-KS",29049,Clinton County,Missouri
+cbsa_28140,28140,"Kansas City, MO-KS",29095,Jackson County,Missouri
+cbsa_28140,28140,"Kansas City, MO-KS",29107,Lafayette County,Missouri
+cbsa_28140,28140,"Kansas City, MO-KS",29165,Platte County,Missouri
+cbsa_28140,28140,"Kansas City, MO-KS",29177,Ray County,Missouri
+cbsa_28880,28880,"Kiryas Joel-Poughkeepsie-Newburgh, NY",36027,Dutchess County,New York
+cbsa_28880,28880,"Kiryas Joel-Poughkeepsie-Newburgh, NY",36071,Orange County,New York
+cbsa_28940,28940,"Knoxville, TN",47001,Anderson County,Tennessee
+cbsa_28940,28940,"Knoxville, TN",47009,Blount County,Tennessee
+cbsa_28940,28940,"Knoxville, TN",47013,Campbell County,Tennessee
+cbsa_28940,28940,"Knoxville, TN",47057,Grainger County,Tennessee
+cbsa_28940,28940,"Knoxville, TN",47093,Knox County,Tennessee
+cbsa_28940,28940,"Knoxville, TN",47105,Loudon County,Tennessee
+cbsa_28940,28940,"Knoxville, TN",47129,Morgan County,Tennessee
+cbsa_28940,28940,"Knoxville, TN",47145,Roane County,Tennessee
+cbsa_28940,28940,"Knoxville, TN",47173,Union County,Tennessee
+cbsa_29460,29460,"Lakeland-Winter Haven, FL",12105,Polk County,Florida
+cbsa_29820,29820,"Las Vegas-Henderson-North Las Vegas, NV",32003,Clark County,Nevada
+cbsa_30780,30780,"Little Rock-North Little Rock-Conway, AR",05045,Faulkner County,Arkansas
+cbsa_30780,30780,"Little Rock-North Little Rock-Conway, AR",05053,Grant County,Arkansas
+cbsa_30780,30780,"Little Rock-North Little Rock-Conway, AR",05085,Lonoke County,Arkansas
+cbsa_30780,30780,"Little Rock-North Little Rock-Conway, AR",05105,Perry County,Arkansas
+cbsa_30780,30780,"Little Rock-North Little Rock-Conway, AR",05119,Pulaski County,Arkansas
+cbsa_30780,30780,"Little Rock-North Little Rock-Conway, AR",05125,Saline County,Arkansas
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",18019,Clark County,Indiana
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",18043,Floyd County,Indiana
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",18061,Harrison County,Indiana
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",18175,Washington County,Indiana
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",21029,Bullitt County,Kentucky
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",21103,Henry County,Kentucky
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",21111,Jefferson County,Kentucky
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",21163,Meade County,Kentucky
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",21179,Nelson County,Kentucky
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",21185,Oldham County,Kentucky
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",21211,Shelby County,Kentucky
+cbsa_31140,31140,"Louisville/Jefferson County, KY-IN",21215,Spencer County,Kentucky
+cbsa_31540,31540,"Madison, WI",55021,Columbia County,Wisconsin
+cbsa_31540,31540,"Madison, WI",55025,Dane County,Wisconsin
+cbsa_31540,31540,"Madison, WI",55045,Green County,Wisconsin
+cbsa_31540,31540,"Madison, WI",55049,Iowa County,Wisconsin
+cbsa_32580,32580,"McAllen-Edinburg-Mission, TX",48215,Hidalgo County,Texas
+cbsa_32820,32820,"Memphis, TN-MS-AR",05035,Crittenden County,Arkansas
+cbsa_32820,32820,"Memphis, TN-MS-AR",28009,Benton County,Mississippi
+cbsa_32820,32820,"Memphis, TN-MS-AR",28033,DeSoto County,Mississippi
+cbsa_32820,32820,"Memphis, TN-MS-AR",28093,Marshall County,Mississippi
+cbsa_32820,32820,"Memphis, TN-MS-AR",28137,Tate County,Mississippi
+cbsa_32820,32820,"Memphis, TN-MS-AR",28143,Tunica County,Mississippi
+cbsa_32820,32820,"Memphis, TN-MS-AR",47047,Fayette County,Tennessee
+cbsa_32820,32820,"Memphis, TN-MS-AR",47157,Shelby County,Tennessee
+cbsa_32820,32820,"Memphis, TN-MS-AR",47167,Tipton County,Tennessee
+cbsa_33100,33100,"Miami-Fort Lauderdale-West Palm Beach, FL",12011,Broward County,Florida
+cbsa_33100,33100,"Miami-Fort Lauderdale-West Palm Beach, FL",12086,Miami-Dade County,Florida
+cbsa_33100,33100,"Miami-Fort Lauderdale-West Palm Beach, FL",12099,Palm Beach County,Florida
+cbsa_33340,33340,"Milwaukee-Waukesha, WI",55079,Milwaukee County,Wisconsin
+cbsa_33340,33340,"Milwaukee-Waukesha, WI",55089,Ozaukee County,Wisconsin
+cbsa_33340,33340,"Milwaukee-Waukesha, WI",55131,Washington County,Wisconsin
+cbsa_33340,33340,"Milwaukee-Waukesha, WI",55133,Waukesha County,Wisconsin
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27003,Anoka County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27019,Carver County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27025,Chisago County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27037,Dakota County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27053,Hennepin County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27059,Isanti County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27079,Le Sueur County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27095,Mille Lacs County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27123,Ramsey County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27139,Scott County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27141,Sherburne County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27163,Washington County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",27171,Wright County,Minnesota
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",55093,Pierce County,Wisconsin
+cbsa_33460,33460,"Minneapolis-St. Paul-Bloomington, MN-WI",55109,St. Croix County,Wisconsin
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47015,Cannon County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47021,Cheatham County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47037,Davidson County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47043,Dickson County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47081,Hickman County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47111,Macon County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47119,Maury County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47147,Robertson County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47149,Rutherford County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47159,Smith County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47165,Sumner County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47169,Trousdale County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47187,Williamson County,Tennessee
+cbsa_34980,34980,"Nashville-Davidson--Murfreesboro--Franklin, TN",47189,Wilson County,Tennessee
+cbsa_35300,35300,"New Haven, CT",09170,South Central Connecticut Planning Region,Connecticut
+cbsa_35380,35380,"New Orleans-Metairie, LA",22051,Jefferson Parish,Louisiana
+cbsa_35380,35380,"New Orleans-Metairie, LA",22071,Orleans Parish,Louisiana
+cbsa_35380,35380,"New Orleans-Metairie, LA",22075,Plaquemines Parish,Louisiana
+cbsa_35380,35380,"New Orleans-Metairie, LA",22087,St. Bernard Parish,Louisiana
+cbsa_35380,35380,"New Orleans-Metairie, LA",22089,St. Charles Parish,Louisiana
+cbsa_35380,35380,"New Orleans-Metairie, LA",22093,St. James Parish,Louisiana
+cbsa_35380,35380,"New Orleans-Metairie, LA",22095,St. John the Baptist Parish,Louisiana
+cbsa_35840,35840,"North Port-Bradenton-Sarasota, FL",12081,Manatee County,Florida
+cbsa_35840,35840,"North Port-Bradenton-Sarasota, FL",12115,Sarasota County,Florida
+cbsa_36260,36260,"Ogden, UT",49011,Davis County,Utah
+cbsa_36260,36260,"Ogden, UT",49029,Morgan County,Utah
+cbsa_36260,36260,"Ogden, UT",49057,Weber County,Utah
+cbsa_36540,36540,"Omaha, NE-IA",19085,Harrison County,Iowa
+cbsa_36540,36540,"Omaha, NE-IA",19129,Mills County,Iowa
+cbsa_36540,36540,"Omaha, NE-IA",19155,Pottawattamie County,Iowa
+cbsa_36540,36540,"Omaha, NE-IA",31025,Cass County,Nebraska
+cbsa_36540,36540,"Omaha, NE-IA",31055,Douglas County,Nebraska
+cbsa_36540,36540,"Omaha, NE-IA",31153,Sarpy County,Nebraska
+cbsa_36540,36540,"Omaha, NE-IA",31155,Saunders County,Nebraska
+cbsa_36540,36540,"Omaha, NE-IA",31177,Washington County,Nebraska
+cbsa_36740,36740,"Orlando-Kissimmee-Sanford, FL",12069,Lake County,Florida
+cbsa_36740,36740,"Orlando-Kissimmee-Sanford, FL",12095,Orange County,Florida
+cbsa_36740,36740,"Orlando-Kissimmee-Sanford, FL",12097,Osceola County,Florida
+cbsa_36740,36740,"Orlando-Kissimmee-Sanford, FL",12117,Seminole County,Florida
+cbsa_37100,37100,"Oxnard-Thousand Oaks-Ventura, CA",06111,Ventura County,California
+cbsa_37340,37340,"Palm Bay-Melbourne-Titusville, FL",12009,Brevard County,Florida
+cbsa_38300,38300,"Pittsburgh, PA",42003,Allegheny County,Pennsylvania
+cbsa_38300,38300,"Pittsburgh, PA",42005,Armstrong County,Pennsylvania
+cbsa_38300,38300,"Pittsburgh, PA",42007,Beaver County,Pennsylvania
+cbsa_38300,38300,"Pittsburgh, PA",42019,Butler County,Pennsylvania
+cbsa_38300,38300,"Pittsburgh, PA",42051,Fayette County,Pennsylvania
+cbsa_38300,38300,"Pittsburgh, PA",42073,Lawrence County,Pennsylvania
+cbsa_38300,38300,"Pittsburgh, PA",42125,Washington County,Pennsylvania
+cbsa_38300,38300,"Pittsburgh, PA",42129,Westmoreland County,Pennsylvania
+cbsa_38900,38900,"Portland-Vancouver-Hillsboro, OR-WA",41005,Clackamas County,Oregon
+cbsa_38900,38900,"Portland-Vancouver-Hillsboro, OR-WA",41009,Columbia County,Oregon
+cbsa_38900,38900,"Portland-Vancouver-Hillsboro, OR-WA",41051,Multnomah County,Oregon
+cbsa_38900,38900,"Portland-Vancouver-Hillsboro, OR-WA",41067,Washington County,Oregon
+cbsa_38900,38900,"Portland-Vancouver-Hillsboro, OR-WA",41071,Yamhill County,Oregon
+cbsa_38900,38900,"Portland-Vancouver-Hillsboro, OR-WA",53011,Clark County,Washington
+cbsa_38900,38900,"Portland-Vancouver-Hillsboro, OR-WA",53059,Skamania County,Washington
+cbsa_39300,39300,"Providence-Warwick, RI-MA",25005,Bristol County,Massachusetts
+cbsa_39300,39300,"Providence-Warwick, RI-MA",44001,Bristol County,Rhode Island
+cbsa_39300,39300,"Providence-Warwick, RI-MA",44003,Kent County,Rhode Island
+cbsa_39300,39300,"Providence-Warwick, RI-MA",44005,Newport County,Rhode Island
+cbsa_39300,39300,"Providence-Warwick, RI-MA",44007,Providence County,Rhode Island
+cbsa_39300,39300,"Providence-Warwick, RI-MA",44009,Washington County,Rhode Island
+cbsa_39340,39340,"Provo-Orem-Lehi, UT",49023,Juab County,Utah
+cbsa_39340,39340,"Provo-Orem-Lehi, UT",49049,Utah County,Utah
+cbsa_39580,39580,"Raleigh-Cary, NC",37069,Franklin County,North Carolina
+cbsa_39580,39580,"Raleigh-Cary, NC",37101,Johnston County,North Carolina
+cbsa_39580,39580,"Raleigh-Cary, NC",37183,Wake County,North Carolina
+cbsa_40060,40060,"Richmond, VA",51007,Amelia County,Virginia
+cbsa_40060,40060,"Richmond, VA",51036,Charles City County,Virginia
+cbsa_40060,40060,"Richmond, VA",51041,Chesterfield County,Virginia
+cbsa_40060,40060,"Richmond, VA",51053,Dinwiddie County,Virginia
+cbsa_40060,40060,"Richmond, VA",51075,Goochland County,Virginia
+cbsa_40060,40060,"Richmond, VA",51085,Hanover County,Virginia
+cbsa_40060,40060,"Richmond, VA",51087,Henrico County,Virginia
+cbsa_40060,40060,"Richmond, VA",51097,King and Queen County,Virginia
+cbsa_40060,40060,"Richmond, VA",51101,King William County,Virginia
+cbsa_40060,40060,"Richmond, VA",51127,New Kent County,Virginia
+cbsa_40060,40060,"Richmond, VA",51145,Powhatan County,Virginia
+cbsa_40060,40060,"Richmond, VA",51149,Prince George County,Virginia
+cbsa_40060,40060,"Richmond, VA",51183,Sussex County,Virginia
+cbsa_40060,40060,"Richmond, VA",51570,Colonial Heights city,Virginia
+cbsa_40060,40060,"Richmond, VA",51670,Hopewell city,Virginia
+cbsa_40060,40060,"Richmond, VA",51730,Petersburg city,Virginia
+cbsa_40060,40060,"Richmond, VA",51760,Richmond city,Virginia
+cbsa_40140,40140,"Riverside-San Bernardino-Ontario, CA",06065,Riverside County,California
+cbsa_40140,40140,"Riverside-San Bernardino-Ontario, CA",06071,San Bernardino County,California
+cbsa_40380,40380,"Rochester, NY",36051,Livingston County,New York
+cbsa_40380,40380,"Rochester, NY",36055,Monroe County,New York
+cbsa_40380,40380,"Rochester, NY",36069,Ontario County,New York
+cbsa_40380,40380,"Rochester, NY",36073,Orleans County,New York
+cbsa_40380,40380,"Rochester, NY",36117,Wayne County,New York
+cbsa_40900,40900,"Sacramento-Roseville-Folsom, CA",06017,El Dorado County,California
+cbsa_40900,40900,"Sacramento-Roseville-Folsom, CA",06061,Placer County,California
+cbsa_40900,40900,"Sacramento-Roseville-Folsom, CA",06067,Sacramento County,California
+cbsa_40900,40900,"Sacramento-Roseville-Folsom, CA",06113,Yolo County,California
+cbsa_41180,41180,"St. Louis, MO-IL",17005,Bond County,Illinois
+cbsa_41180,41180,"St. Louis, MO-IL",17013,Calhoun County,Illinois
+cbsa_41180,41180,"St. Louis, MO-IL",17027,Clinton County,Illinois
+cbsa_41180,41180,"St. Louis, MO-IL",17083,Jersey County,Illinois
+cbsa_41180,41180,"St. Louis, MO-IL",17117,Macoupin County,Illinois
+cbsa_41180,41180,"St. Louis, MO-IL",17119,Madison County,Illinois
+cbsa_41180,41180,"St. Louis, MO-IL",17133,Monroe County,Illinois
+cbsa_41180,41180,"St. Louis, MO-IL",17163,St. Clair County,Illinois
+cbsa_41180,41180,"St. Louis, MO-IL",29071,Franklin County,Missouri
+cbsa_41180,41180,"St. Louis, MO-IL",29099,Jefferson County,Missouri
+cbsa_41180,41180,"St. Louis, MO-IL",29113,Lincoln County,Missouri
+cbsa_41180,41180,"St. Louis, MO-IL",29183,St. Charles County,Missouri
+cbsa_41180,41180,"St. Louis, MO-IL",29189,St. Louis County,Missouri
+cbsa_41180,41180,"St. Louis, MO-IL",29219,Warren County,Missouri
+cbsa_41180,41180,"St. Louis, MO-IL",29510,St. Louis city,Missouri
+cbsa_41620,41620,"Salt Lake City-Murray, UT",49035,Salt Lake County,Utah
+cbsa_41620,41620,"Salt Lake City-Murray, UT",49045,Tooele County,Utah
+cbsa_41860,41860,"San Francisco-Oakland-Fremont, CA",06001,Alameda County,California
+cbsa_41860,41860,"San Francisco-Oakland-Fremont, CA",06013,Contra Costa County,California
+cbsa_41860,41860,"San Francisco-Oakland-Fremont, CA",06041,Marin County,California
+cbsa_41860,41860,"San Francisco-Oakland-Fremont, CA",06075,San Francisco County,California
+cbsa_41860,41860,"San Francisco-Oakland-Fremont, CA",06081,San Mateo County,California
+cbsa_41940,41940,"San Jose-Sunnyvale-Santa Clara, CA",06069,San Benito County,California
+cbsa_41940,41940,"San Jose-Sunnyvale-Santa Clara, CA",06085,Santa Clara County,California
+cbsa_44060,44060,"Spokane-Spokane Valley, WA",53063,Spokane County,Washington
+cbsa_44060,44060,"Spokane-Spokane Valley, WA",53065,Stevens County,Washington
+cbsa_44700,44700,"Stockton-Lodi, CA",06077,San Joaquin County,California
+cbsa_45060,45060,"Syracuse, NY",36053,Madison County,New York
+cbsa_45060,45060,"Syracuse, NY",36067,Onondaga County,New York
+cbsa_45060,45060,"Syracuse, NY",36075,Oswego County,New York
+cbsa_45300,45300,"Tampa-St. Petersburg-Clearwater, FL",12053,Hernando County,Florida
+cbsa_45300,45300,"Tampa-St. Petersburg-Clearwater, FL",12057,Hillsborough County,Florida
+cbsa_45300,45300,"Tampa-St. Petersburg-Clearwater, FL",12101,Pasco County,Florida
+cbsa_45300,45300,"Tampa-St. Petersburg-Clearwater, FL",12103,Pinellas County,Florida
+cbsa_45780,45780,"Toledo, OH",39051,Fulton County,Ohio
+cbsa_45780,45780,"Toledo, OH",39095,Lucas County,Ohio
+cbsa_45780,45780,"Toledo, OH",39173,Wood County,Ohio
+cbsa_46060,46060,"Tucson, AZ",04019,Pima County,Arizona
+cbsa_46140,46140,"Tulsa, OK",40037,Creek County,Oklahoma
+cbsa_46140,46140,"Tulsa, OK",40111,Okmulgee County,Oklahoma
+cbsa_46140,46140,"Tulsa, OK",40113,Osage County,Oklahoma
+cbsa_46140,46140,"Tulsa, OK",40117,Pawnee County,Oklahoma
+cbsa_46140,46140,"Tulsa, OK",40131,Rogers County,Oklahoma
+cbsa_46140,46140,"Tulsa, OK",40143,Tulsa County,Oklahoma
+cbsa_46140,46140,"Tulsa, OK",40145,Wagoner County,Oklahoma
+cbsa_46520,46520,"Urban Honolulu, HI",15003,Honolulu County,Hawaii
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",37029,Camden County,North Carolina
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",37053,Currituck County,North Carolina
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",37073,Gates County,North Carolina
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51073,Gloucester County,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51093,Isle of Wight County,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51095,James City County,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51115,Mathews County,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51181,Surry County,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51199,York County,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51550,Chesapeake city,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51650,Hampton city,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51700,Newport News city,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51710,Norfolk city,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51735,Poquoson city,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51740,Portsmouth city,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51800,Suffolk city,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51810,Virginia Beach city,Virginia
+cbsa_47260,47260,"Virginia Beach-Chesapeake-Norfolk, VA-NC",51830,Williamsburg city,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",11001,District of Columbia,District of Columbia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",24017,Charles County,Maryland
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",24021,Frederick County,Maryland
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",24031,Montgomery County,Maryland
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",24033,Prince George's County,Maryland
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51013,Arlington County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51043,Clarke County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51047,Culpeper County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51059,Fairfax County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51061,Fauquier County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51107,Loudoun County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51153,Prince William County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51157,Rappahannock County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51177,Spotsylvania County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51179,Stafford County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51187,Warren County,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51510,Alexandria city,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51600,Fairfax city,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51610,Falls Church city,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51630,Fredericksburg city,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51683,Manassas city,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",51685,Manassas Park city,Virginia
+cbsa_47900,47900,"Washington-Arlington-Alexandria, DC-VA-MD-WV",54037,Jefferson County,West Virginia
+cbsa_48620,48620,"Wichita, KS",20015,Butler County,Kansas
+cbsa_48620,48620,"Wichita, KS",20079,Harvey County,Kansas
+cbsa_48620,48620,"Wichita, KS",20173,Sedgwick County,Kansas
+cbsa_48620,48620,"Wichita, KS",20191,Sumner County,Kansas
+cbsa_49180,49180,"Winston-Salem, NC",37057,Davidson County,North Carolina
+cbsa_49180,49180,"Winston-Salem, NC",37059,Davie County,North Carolina
+cbsa_49180,49180,"Winston-Salem, NC",37067,Forsyth County,North Carolina
+cbsa_49180,49180,"Winston-Salem, NC",37169,Stokes County,North Carolina
+cbsa_49180,49180,"Winston-Salem, NC",37197,Yadkin County,North Carolina
+cbsa_49340,49340,"Worcester, MA",25027,Worcester County,Massachusetts
 charlotte,16740,"Charlotte-Concord-Gastonia, NC-SC",37007,Anson County,North Carolina
 charlotte,16740,"Charlotte-Concord-Gastonia, NC-SC",37025,Cabarrus County,North Carolina
 charlotte,16740,"Charlotte-Concord-Gastonia, NC-SC",37071,Gaston County,North Carolina

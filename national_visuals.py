@@ -84,7 +84,7 @@ def render_national_map(selected, metric, metro_name, map_metric):
         st.warning(f"Missing boundaries for {len(fips - present)} counties.")
     map_df = selected[selected["county_fips"].isin(present)].copy()
     map_df["map_value"] = pd.to_numeric(map_df[col], errors="coerce")
-    map_df["label"] = map_df["county"].astype(str) + " (" + map_df["county_fips"] + ")"
+    map_df["label"] = map_df["county"].astype(str)
     valid = map_df.dropna(subset=["map_value"])
     if valid.empty:
         st.info("No values available for this map measure.")
@@ -93,18 +93,42 @@ def render_national_map(selected, metric, metro_name, map_metric):
     use_maplibre = hasattr(px, "choropleth_map")
     choropleth = px.choropleth_map if use_maplibre else px.choropleth_mapbox
     style_arg = "map_style" if use_maplibre else "mapbox_style"
+    # Preformat tooltip strings before passing them to Plotly. This avoids
+    # raw float precision leaking through Plotly/Streamlit hover rendering.
+    for column in ("value", "mom_pct", "yoy_pct"):
+        valid.loc[:, column] = pd.to_numeric(valid[column], errors="coerce")
+
+    def display_money(v):
+        return f"${v:,.0f}" if pd.notna(v) else "N/A"
+
+    def display_change(v):
+        return f"{v:+.2f}%" if pd.notna(v) else "N/A"
+
+    valid = valid.copy()
+    valid["tooltip_value"] = valid["value"].map(display_money)
+    valid["tooltip_mom"] = valid["mom_pct"].map(display_change)
+    valid["tooltip_yoy"] = valid["yoy_pct"].map(display_change)
     fig = choropleth(valid,
         geojson={"type": "FeatureCollection", "features": features},
         locations="county_fips", featureidkey="id", color="map_value",
         hover_name="label", labels={"map_value": map_metric},
+        custom_data=["label", "tooltip_value", "tooltip_mom", "tooltip_yoy"],
         **{style_arg: "open-street-map"}, opacity=0.75,
         title=f"{metro_name} — {metric}: {map_metric}")
+    unit_label = "Typical home value" if metric == "Home Prices" else "Typical monthly rent"
+    fig.update_traces(hovertemplate=(
+        "<b>%{customdata[0]}</b>"
+        f"<br>{unit_label}: %{{customdata[1]}}"
+        "<br>Monthly change: %{customdata[2]}"
+        "<br>Annual change: %{customdata[3]}"
+        "<extra></extra>"
+    ))
     try:
         center, zoom = map_view_from_features(features)
     except ValueError as exc:
         st.warning(f"Invalid map boundaries: {exc}")
         return
-    fig.update_layout(**{("map" if use_maplibre else "mapbox"): dict(center=center, zoom=zoom)}, height=590,
+    fig.update_layout(**{("map" if use_maplibre else "mapbox"): dict(center=center, zoom=zoom)}, height=780,
                       margin=dict(l=0, r=0, t=50, b=0))
     st.plotly_chart(fig, use_container_width=True, key="unified_map",
         config={"scrollZoom": True, "displayModeBar": True, "displaylogo": False})
@@ -127,7 +151,7 @@ def render_national_chart(metro_key, selected, metric, metro_name, history_overr
         st.info("No historical observations for selected counties.")
         return
     names = selected.set_index("county_fips")["county"].astype(str).to_dict()
-    chart["county_label"] = chart["county_fips"].map(lambda f: f"{names.get(f, f)} ({f})")
+    chart["county_label"] = chart["county_fips"].map(lambda f: names.get(f, f))
     _, value_col = SERIES[metric]
     min_date, max_date = chart["date"].min().date(), chart["date"].max().date()
     start, end = st.slider("Historical date range", min_value=min_date, max_value=max_date,
@@ -170,9 +194,19 @@ def render_national_chart(metro_key, selected, metric, metro_name, history_overr
             trace.line.width = 4
         else:
             trace.line.width = 3
+    # Plotly's default hover can expose full floating-point precision.
     if value_mode == "Indexed Growth":
+        fig.update_traces(hovertemplate=(
+            "<b>%{fullData.name}</b><br>%{x|%b %Y}<br>Index: %{y:.2f}"
+            "<extra></extra>"
+        ))
         fig.add_hline(y=100, line_dash="dash", line_color="gray", opacity=0.5)
-    fig.update_layout(height=570, hovermode="closest", dragmode="pan",
+    else:
+        fig.update_traces(hovertemplate=(
+            "<b>%{fullData.name}</b><br>%{x|%b %Y}<br>Value: $%{y:,.0f}"
+            "<extra></extra>"
+        ))
+    fig.update_layout(height=750, hovermode="closest", dragmode="pan",
         margin=dict(l=40, r=20, t=60, b=40))
     st.plotly_chart(fig, use_container_width=True, key="unified_chart",
         config={"displayModeBar": True, "displaylogo": False, "doubleClick": "reset"})

@@ -391,7 +391,7 @@ def render_trend_chart(
         )
 
     fig.update_layout(
-        height=600,
+        height=750,
         dragmode="pan",
         hovermode="closest",
         hoverdistance=30,
@@ -751,6 +751,40 @@ def load_national_kpis(metric: str) -> pd.DataFrame:
     return df
 
 
+@st.cache_data
+def load_metro_registry():
+    """Official ranked MSA list; never silently mix in stale hardcoded metros."""
+    path = ROOT_DIR / "geography_registry" / "metros.csv"
+    if not path.exists():
+        st.error("Missing geography_registry/metros.csv. Run the top-100 registry builder first.")
+        st.stop()
+    registry = pd.read_csv(path, dtype={"metro_key": "string", "cbsa_code": "string"})
+    required = {"metro_key", "metro_name", "states", "population_rank"}
+    if required - set(registry.columns):
+        raise ValueError(f"Metro registry missing columns: {sorted(required - set(registry.columns))}")
+    registry["population_rank"] = pd.to_numeric(registry["population_rank"], errors="raise")
+    if registry["metro_key"].duplicated().any():
+        raise ValueError("Duplicate metro keys in metros.csv")
+    return registry.sort_values("population_rank").reset_index(drop=True)
+
+
+@st.cache_data
+def load_county_registry():
+    path = ROOT_DIR / "geography_registry" / "metro_counties.csv"
+    registry = pd.read_csv(path, dtype={"metro_key": "string", "county_fips": "string"})
+    required = {"metro_key", "county_fips"}
+    if required - set(registry.columns):
+        raise ValueError(f"County registry missing columns: {sorted(required - set(registry.columns))}")
+    registry["county_fips"] = registry["county_fips"].str.zfill(5)
+    if registry["county_fips"].duplicated().any():
+        raise ValueError("Duplicate county assignments in metro_counties.csv")
+    return registry
+
+
+def metro_label(row):
+    return f"#{int(row.population_rank)} · {row.metro_name}, {row.states}"
+
+
 BAY_COUNTY_FIPS = {
     "Alameda": "06001", "Contra Costa": "06013", "Marin": "06041",
     "Napa": "06055", "San Francisco": "06075", "San Mateo": "06081",
@@ -791,80 +825,133 @@ def load_bay_area_history(metric):
 
 
 def render_national_metro_explorer() -> None:
-    st.title("🏠 High Low on Zillow")
-    st.caption("Metro → metric → change view. Explore the county map, trends, then rankings.")
-
-    # The selectors are global to this dashboard, not buried in individual tabs.
-    metro_options = sorted(NATIONAL_METRO_NAMES, key=lambda k: NATIONAL_METRO_NAMES[k])
-    top_metro, top_metric, top_change = st.columns([2.3, 1.5, 1.5])
-    with top_metro:
-        metro_key = st.selectbox("Metropolitan area", metro_options,
-            format_func=lambda k: NATIONAL_METRO_NAMES[k], key="unified_metro")
-    with top_metric:
-        metric = st.radio("Housing metric", ["Home Prices", "Rentals"],
-            horizontal=True, key="unified_metric")
-    with top_change:
-        change = st.selectbox("Map / table measure",
-            ["Latest Value", "MoM % Change", "YoY % Change"], key="unified_change")
+    st.title("🏠 U.S. Housing Market Explorer")
+    st.caption("100 largest U.S. metropolitan areas by 2025 population · County-level Zillow housing data")
 
     try:
-        df = load_bay_area_unified(metric) if metro_key == "bay_area" else load_national_kpis(metric)
+        registry = load_metro_registry()
+        county_registry = load_county_registry()
+    except (OSError, ValueError, KeyError) as exc:
+        st.error(f"Geographic registry unavailable: {exc}")
+        return
+
+    metro_names = dict(zip(registry["metro_key"], registry.apply(metro_label, axis=1)))
+    metro_options = registry["metro_key"].tolist()
+    # Older Streamlit session state may contain a former Bay Area-only option.
+    if st.session_state.get("unified_metro") not in metro_options:
+        st.session_state["unified_metro"] = "cbsa_41860" if "cbsa_41860" in metro_options else metro_options[0]
+
+    left, right = st.columns([2.8, 1.5])
+    with left:
+        metro_key = st.selectbox("1 · Choose a metropolitan area (population rank)",
+            metro_options, format_func=lambda k: metro_names[k], key="unified_metro")
+    with right:
+        metric = st.radio("2 · Explore housing costs", ["Home Prices", "Rentals"],
+            format_func=lambda m: "Buying a home" if m == "Home Prices" else "Renting a home",
+            horizontal=True, key="unified_metric")
+    change = st.radio("3 · Color the map and sort counties by",
+        ["Latest Value", "MoM % Change", "YoY % Change"],
+        format_func=lambda m: {"Latest Value": "Current dollar value", "MoM % Change": "Monthly change (%)",
+                               "YoY % Change": "Annual change (%)"}[m],
+        horizontal=True, key="unified_change")
+
+    try:
+        df = load_national_kpis(metric)
     except (FileNotFoundError, OSError, ValueError) as exc:
-        st.error(f"Cannot load county KPIs: {exc}")
+        st.error(f"Cannot load Zillow county data: {exc}")
         return
     df["county_fips"] = df["county_fips"].astype("string").str.zfill(5)
+    df["date"] = pd.to_datetime(df["date"])
+    global_latest = df["date"].max()
+    metro_name = metro_names[metro_key].split(" · ", 1)[-1]
+    expected = county_registry.loc[county_registry["metro_key"] == metro_key].copy()
+    expected_count = len(expected)
     metro = df.loc[df["metro_key"] == metro_key].copy()
-    if metro.empty:
-        st.warning("No counties for this metro and housing metric.")
+    valid_metros = df.loc[df["value"].notna(), "metro_key"].nunique()
+    st.caption(f"**Data available through {global_latest:%B %Y}** · "
+               f"{valid_metros} of {len(registry)} ranked metros have {metric.lower()} observations. "
+               "MoM = change from prior month; YoY = change from the same month last year.")
+
+    if metro.empty or metro["value"].notna().sum() == 0:
+        st.warning(f"**{metro_name}: Zillow county-level {metric.lower()} data unavailable.** "
+                   f"The official registry contains {expected_count} county equivalents for this metro, "
+                   "but none match the current Zillow source. Connecticut's newer planning regions "
+                   "require a validated geographic crosswalk; no estimates have been fabricated.")
         return
+
     snapshot = metro["date"].max()
     metro = metro.loc[metro["date"] == snapshot].copy()
-    metro_name = NATIONAL_METRO_NAMES[metro_key]
-    valid = metro.dropna(subset=["value"])
+    valid = metro.dropna(subset=["value"]).copy()
+    valid_count = valid["county_fips"].nunique()
+    coverage = 100 * valid_count / expected_count if expected_count else 0
 
-    # Metro-level headline cards use all represented counties, regardless of focus.
     def avg_change(col):
         vals = pd.to_numeric(metro[col], errors="coerce").dropna()
         return f"{vals.mean():+.2f}%" if not vals.empty else "N/A"
 
+    st.subheader(f"{metro_name} · {snapshot:%B %Y}")
     k1, k2, k3, k4 = st.columns(4)
-    k1.metric(f"Avg county {('home value' if metric == 'Home Prices' else 'rent')}",
+    k1.metric("Average county home value" if metric == "Home Prices" else "Average county monthly rent",
               format_currency(valid["value"].mean()) if not valid.empty else "N/A")
-    k2.metric("Average county MoM", avg_change("mom_pct"))
-    k3.metric("Average county YoY", avg_change("yoy_pct"))
-    k4.metric("Counties with data", f"{len(valid)} / {len(metro)}")
-    st.caption(f"{metro_name} · {snapshot:%B %Y} · Unweighted county averages, not metro-wide Zillow indices. Growth averages are descriptive, not aggregate metro growth rates.")
+    k2.metric("Average monthly change", avg_change("mom_pct"))
+    k3.metric("Average annual change", avg_change("yoy_pct"))
+    k4.metric("County data coverage", f"{valid_count} / {expected_count}", f"{coverage:.2f}% covered", delta_color="off")
+    st.caption("Dollar values and changes are **unweighted county averages**, not official metro-wide Zillow indices. "
+               "Coverage uses the official MSA county registry as the denominator; rental coverage may be incomplete.")
+    if valid_count < expected_count:
+        st.caption(f"{expected_count - valid_count} official county equivalents have no current Zillow {metric.lower()} observation.")
 
-    county_names = metro.set_index("county_fips")["county"].astype(str).to_dict()
+    # The county registry is the authority for state names and disambiguation.
+    metro = metro.merge(expected.drop(columns=["cbsa_code", "metro_title"], errors="ignore"),
+                        on=["metro_key", "county_fips"], how="left", suffixes=("", "_registry"),
+                        validate="many_to_one")
+    state_abbr = {"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA",
+      "Colorado":"CO","Connecticut":"CT","Delaware":"DE","District of Columbia":"DC","Florida":"FL",
+      "Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA",
+      "Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA",
+      "Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE",
+      "Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY",
+      "North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR",
+      "Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD",
+      "Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA",
+      "West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"}
+    if "state_name" in metro.columns:
+        metro["state_abbr"] = metro["state_name"].map(state_abbr).fillna("")
+    else:
+        metro["state_abbr"] = ""
+    metro["county_label"] = metro["county"].astype(str).str.replace(r"\s+County$", "", regex=True).str.strip()
+    metro["county_label"] = metro["county_label"] + metro["state_abbr"].map(lambda s: f", {s}" if s else "")
+    county_names = metro.set_index("county_fips")["county_label"].to_dict()
     options = sorted(county_names, key=lambda f: (county_names[f], f))
-    selected_fips = st.multiselect("Counties shown on map, chart and table",
-        options, default=options, format_func=lambda f: f"{county_names[f]} ({f})",
+    selected_fips = st.multiselect("Counties to display on the map, chart, and rankings",
+        options, default=options, format_func=lambda f: county_names[f],
         key=f"unified_counties_{metro_key}_{metric}")
     if not selected_fips:
-        st.info("Select at least one county.")
+        st.info("Select at least one county to continue.")
         return
     focused = metro.loc[metro["county_fips"].isin(selected_fips)].copy()
+    focused["county"] = focused["county_label"]
 
-    st.subheader("1 · County heat map")
+    st.subheader("1 · County housing map")
     render_national_map(focused, metric, metro_name, change)
-    st.caption("Scroll over the map to zoom; drag to pan. Double-click or use map controls to reset the view.")
+    st.caption("Scroll to zoom and drag to pan. Map colors reflect the selected dollar value or percentage change.")
 
     st.subheader("2 · Historical trends")
-    render_national_chart(metro_key, focused, metric, metro_name,
-        history_override=load_bay_area_history(metric) if metro_key == "bay_area" else None)
+    render_national_chart(metro_key, focused, metric, metro_name)
 
     st.subheader("3 · County rankings")
     sort_col = {"Latest Value": "value", "MoM % Change": "mom_pct", "YoY % Change": "yoy_pct"}[change]
-    table = focused.sort_values(sort_col, ascending=False, na_position="last")[
-        ["county", "county_fips", "value", "mom_pct", "yoy_pct", "rank_desc"]].copy()
-    table = table.rename(columns={"county":"County", "county_fips":"FIPS",
-        "value":"Latest Value", "mom_pct":"MoM %", "yoy_pct":"YoY %", "rank_desc":"Metro Value Rank"})
-    st.dataframe(table.style.format({"Latest Value":format_currency,
-        "MoM %":format_percent, "YoY %":format_percent,
-        "Metro Value Rank":lambda x: "N/A" if pd.isna(x) else str(int(x))})
-        .map(color_percent, subset=["MoM %", "YoY %"]),
+    table = focused.sort_values(sort_col, ascending=False, na_position="last")[[
+        "county_label", "value", "mom_pct", "yoy_pct", "rank_desc"]].copy()
+    table = table.rename(columns={"county_label": "County", "value": "Current Value",
+        "mom_pct": "Monthly Change", "yoy_pct": "Annual Change", "rank_desc": "Value Rank"})
+    st.dataframe(table.style.format({"Current Value": format_currency,
+        "Monthly Change": format_percent, "Annual Change": format_percent,
+        "Value Rank": lambda x: "N/A" if pd.isna(x) else str(int(x))})
+        .map(color_percent, subset=["Monthly Change", "Annual Change"]),
         hide_index=True, use_container_width=True)
-    st.caption("Rank is based on latest values across the full metro. Missing observations appear as N/A. Rental coverage may be lower than home-price coverage.")
+    st.caption("Value Rank is within counties with Zillow observations in the selected metro. "
+               "Monthly and annual percentage changes describe index movements, not sales or transaction volumes.")
 
 
 def main():
