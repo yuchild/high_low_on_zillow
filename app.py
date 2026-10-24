@@ -824,6 +824,13 @@ def load_bay_area_history(metric):
     return history[["metro_key", "county_fips", "date", value_col]]
 
 
+def load_national_history_for_controls(metric: str, metro_key: str):
+    """Load the same history used by the national chart for right-panel date controls."""
+    from national_visuals import load_series
+    history = load_series(metric)
+    return history.loc[history["metro_key"] == metro_key].copy()
+
+
 def render_national_metro_explorer() -> None:
     st.title("🏠 U.S. Housing Market Explorer")
     st.caption("100 largest U.S. metropolitan areas by 2025 population · County-level Zillow housing data")
@@ -841,20 +848,19 @@ def render_national_metro_explorer() -> None:
     if st.session_state.get("unified_metro") not in metro_options:
         st.session_state["unified_metro"] = "cbsa_41860" if "cbsa_41860" in metro_options else metro_options[0]
 
-    left, right = st.columns([2.8, 1.5])
-    with left:
-        metro_key = st.selectbox("1 · Choose a metropolitan area (population rank)",
+    # Persistent right-hand control panel; visualizations occupy the wider left pane.
+    main_pane, control_pane = st.columns([3.4, 1.25], gap="large")
+    with control_pane:
+        st.subheader("Explore & filter")
+        metro_key = st.selectbox("Metropolitan area · population rank",
             metro_options, format_func=lambda k: metro_names[k], key="unified_metro")
-    with right:
-        metric = st.radio("2 · Explore housing costs", ["Home Prices", "Rentals"],
+        metric = st.radio("Housing market", ["Home Prices", "Rentals"],
             format_func=lambda m: "Buying a home" if m == "Home Prices" else "Renting a home",
-            horizontal=True, key="unified_metric")
-    change = st.radio("3 · Color the map and sort counties by",
-        ["Latest Value", "MoM % Change", "YoY % Change"],
-        format_func=lambda m: {"Latest Value": "Current dollar value", "MoM % Change": "Monthly change (%)",
-                               "YoY % Change": "Annual change (%)"}[m],
-        horizontal=True, key="unified_change")
-
+            key="unified_metric")
+        change = st.selectbox("Map colors & county ranking",
+            ["Latest Value", "MoM % Change", "YoY % Change"],
+            format_func=lambda m: {"Latest Value": "Current dollar value", "MoM % Change": "Monthly change (%)",
+                                   "YoY % Change": "Annual change (%)"}[m], key="unified_change")
     try:
         df = load_national_kpis(metric)
     except (FileNotFoundError, OSError, ValueError) as exc:
@@ -868,12 +874,9 @@ def render_national_metro_explorer() -> None:
     expected_count = len(expected)
     metro = df.loc[df["metro_key"] == metro_key].copy()
     valid_metros = df.loc[df["value"].notna(), "metro_key"].nunique()
-    st.caption(f"**Data available through {global_latest:%B %Y}** · "
-               f"{valid_metros} of {len(registry)} ranked metros have {metric.lower()} observations. "
-               "MoM = change from prior month; YoY = change from the same month last year.")
-
     if metro.empty or metro["value"].notna().sum() == 0:
-        st.warning(f"**{metro_name}: Zillow county-level {metric.lower()} data unavailable.** "
+        with main_pane:
+            st.warning(f"**{metro_name}: Zillow county-level {metric.lower()} data unavailable.** "
                    f"The official registry contains {expected_count} county equivalents for this metro, "
                    "but none match the current Zillow source. Connecticut's newer planning regions "
                    "require a validated geographic crosswalk; no estimates have been fabricated.")
@@ -888,18 +891,6 @@ def render_national_metro_explorer() -> None:
     def avg_change(col):
         vals = pd.to_numeric(metro[col], errors="coerce").dropna()
         return f"{vals.mean():+.2f}%" if not vals.empty else "N/A"
-
-    st.subheader(f"{metro_name} · {snapshot:%B %Y}")
-    k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Average county home value" if metric == "Home Prices" else "Average county monthly rent",
-              format_currency(valid["value"].mean()) if not valid.empty else "N/A")
-    k2.metric("Average monthly change", avg_change("mom_pct"))
-    k3.metric("Average annual change", avg_change("yoy_pct"))
-    k4.metric("County data coverage", f"{valid_count} / {expected_count}", f"{coverage:.2f}% covered", delta_color="off")
-    st.caption("Dollar values and changes are **unweighted county averages**, not official metro-wide Zillow indices. "
-               "Coverage uses the official MSA county registry as the denominator; rental coverage may be incomplete.")
-    if valid_count < expected_count:
-        st.caption(f"{expected_count - valid_count} official county equivalents have no current Zillow {metric.lower()} observation.")
 
     # The county registry is the authority for state names and disambiguation.
     metro = metro.merge(expected.drop(columns=["cbsa_code", "metro_title"], errors="ignore"),
@@ -923,35 +914,102 @@ def render_national_metro_explorer() -> None:
     metro["county_label"] = metro["county_label"] + metro["state_abbr"].map(lambda s: f", {s}" if s else "")
     county_names = metro.set_index("county_fips")["county_label"].to_dict()
     options = sorted(county_names, key=lambda f: (county_names[f], f))
-    selected_fips = st.multiselect("Counties to display on the map, chart, and rankings",
-        options, default=options, format_func=lambda f: county_names[f],
-        key=f"unified_counties_{metro_key}_{metric}")
-    if not selected_fips:
-        st.info("Select at least one county to continue.")
-        return
-    focused = metro.loc[metro["county_fips"].isin(selected_fips)].copy()
-    focused["county"] = focused["county_label"]
+    with control_pane:
+        st.divider()
+        st.markdown("**County selection**")
+        selected_fips = st.multiselect("Counties on map, chart & table",
+            options, default=options, format_func=lambda f: county_names[f],
+            key=f"unified_counties_{metro_key}_{metric}")
+    with main_pane:
+        st.caption(f"**Data available through {global_latest:%B %Y}** · "
+                   f"{valid_metros} of {len(registry)} ranked metros have {metric.lower()} observations. "
+                   "MoM = change from prior month; YoY = change from the same month last year.")
 
-    st.subheader("1 · County housing map")
-    render_national_map(focused, metric, metro_name, change)
-    st.caption("Scroll to zoom and drag to pan. Map colors reflect the selected dollar value or percentage change.")
+        st.subheader(f"{metro_name} · {snapshot:%B %Y}")
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Average county home value" if metric == "Home Prices" else "Average county monthly rent",
+                  format_currency(valid["value"].mean()) if not valid.empty else "N/A")
+        k2.metric("Average monthly change", avg_change("mom_pct"))
+        k3.metric("Average annual change", avg_change("yoy_pct"))
+        k4.metric("County data coverage", f"{valid_count} / {expected_count}", f"{coverage:.2f}% covered", delta_color="off")
+        st.caption("Dollar values and changes are **unweighted county averages**, not official metro-wide Zillow indices. "
+                   "Coverage uses the official MSA county registry as the denominator; rental coverage may be incomplete.")
+        if valid_count < expected_count:
+            st.caption(f"{expected_count - valid_count} official county equivalents have no current Zillow {metric.lower()} observation.")
 
-    st.subheader("2 · Historical trends")
-    render_national_chart(metro_key, focused, metric, metro_name)
+        if not selected_fips:
+            st.info("Select at least one county to continue.")
+            return
+        focused = metro.loc[metro["county_fips"].isin(selected_fips)].copy()
+        focused["county"] = focused["county_label"]
 
-    st.subheader("3 · County rankings")
+        st.subheader("County housing map")
+        render_national_map(focused, metric, metro_name, change)
+        st.caption("Scroll to zoom and drag to pan. Map colors reflect the selected dollar value or percentage change.")
+
+    # A new horizontal row aligns historical chart controls with the chart itself.
+    # Both columns start at the same vertical position, directly below the map.
+    chart_pane, chart_control_pane = st.columns([3.4, 1.25], gap="large")
+    with chart_control_pane:
+        st.markdown("**Historical chart**")
+        value_mode = st.radio("Display values", ["Actual Values", "Indexed Growth"],
+            key="unified_chart_values")
+        display_mode = st.radio("Compare counties", ["Compare All", "Highlight", "Isolate"],
+            key="unified_chart_display")
+        focus_label = None
+        if display_mode != "Compare All":
+            focus_options = sorted(county_names[f] for f in selected_fips)
+            if focus_options:
+                focus_label = st.selectbox("County to highlight or isolate", focus_options,
+                    key=f"unified_chart_focus_{metro_key}_{metric}")
+        try:
+            chart_history = load_national_history_for_controls(metric, metro_key)
+        except (FileNotFoundError, OSError, ValueError, KeyError) as exc:
+            chart_history = None
+            st.caption(f"Historical date range unavailable: {exc}")
+        chart_dates = None
+        if chart_history is not None and not chart_history.empty:
+            bounds = pd.to_datetime(chart_history["date"])
+            low, high = bounds.min().date(), bounds.max().date()
+            if low < high:
+                chart_dates = st.slider("Historical date range", min_value=low,
+                    max_value=high, value=(low, high), key=f"unified_chart_dates_{metric}")
+    with chart_pane:
+        st.subheader("Historical trends")
+        render_national_chart(metro_key, focused, metric, metro_name, history_override=chart_history,
+            chart_options={"date_range": chart_dates, "value_mode": value_mode,
+                           "display_mode": display_mode, "focus": focus_label})
+
+    # Full-width, static county table below the map and historical chart.
+    st.divider()
+    st.subheader("County rankings")
+    st.caption(
+        "Value Rank is within counties with Zillow observations in the selected metro. "
+        "Monthly and annual percentage changes describe index movements, "
+        "not sales or transaction volumes."
+    )
     sort_col = {"Latest Value": "value", "MoM % Change": "mom_pct", "YoY % Change": "yoy_pct"}[change]
     table = focused.sort_values(sort_col, ascending=False, na_position="last")[[
-        "county_label", "value", "mom_pct", "yoy_pct", "rank_desc"]].copy()
-    table = table.rename(columns={"county_label": "County", "value": "Current Value",
-        "mom_pct": "Monthly Change", "yoy_pct": "Annual Change", "rank_desc": "Value Rank"})
-    st.dataframe(table.style.format({"Current Value": format_currency,
-        "Monthly Change": format_percent, "Annual Change": format_percent,
-        "Value Rank": lambda x: "N/A" if pd.isna(x) else str(int(x))})
-        .map(color_percent, subset=["Monthly Change", "Annual Change"]),
-        hide_index=True, use_container_width=True)
-    st.caption("Value Rank is within counties with Zillow observations in the selected metro. "
-               "Monthly and annual percentage changes describe index movements, not sales or transaction volumes.")
+        "county_label", "value", "mom_pct", "yoy_pct", "rank_desc"
+    ]].copy()
+    table = table.rename(columns={
+        "county_label": "County", "value": "Current Value",
+        "mom_pct": "Monthly Change", "yoy_pct": "Annual Change",
+        "rank_desc": "Value Rank"
+    })
+    styled_table = (
+        table.style
+        .format({
+            "Current Value": format_currency,
+            "Monthly Change": format_percent,
+            "Annual Change": format_percent,
+            "Value Rank": lambda x: "N/A" if pd.isna(x) else str(int(x)),
+        })
+        .map(color_percent, subset=["Monthly Change", "Annual Change"])
+        .hide(axis="index")
+    )
+    # st.table renders every row as a static table: no internal scrolling or resize control.
+    st.table(styled_table)
 
 
 def main():

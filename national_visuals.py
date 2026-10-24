@@ -136,7 +136,7 @@ def render_national_map(selected, metric, metro_name, map_metric):
         st.caption(f"{map_df['map_value'].isna().sum()} counties have no value for this measure.")
 
 
-def render_national_chart(metro_key, selected, metric, metro_name, history_override=None):
+def render_national_chart(metro_key, selected, metric, metro_name, history_override=None, chart_options=None):
     try:
         history = history_override if history_override is not None else load_series(metric)
     except (OSError, ValueError) as exc:
@@ -154,26 +154,30 @@ def render_national_chart(metro_key, selected, metric, metro_name, history_overr
     chart["county_label"] = chart["county_fips"].map(lambda f: names.get(f, f))
     _, value_col = SERIES[metric]
     min_date, max_date = chart["date"].min().date(), chart["date"].max().date()
-    start, end = st.slider("Historical date range", min_value=min_date, max_value=max_date,
-        value=(min_date, max_date), key="unified_chart_dates")
+    if chart_options is not None:
+        date_range = chart_options.get("date_range") or (min_date, max_date)
+        start, end = date_range
+        value_mode = chart_options.get("value_mode", "Actual Values")
+        display_mode = chart_options.get("display_mode", "Compare All")
+        focus = chart_options.get("focus")
+    else:
+        start, end = st.slider("Historical date range", min_value=min_date, max_value=max_date,
+            value=(min_date, max_date), key="unified_chart_dates")
+        value_mode = st.radio("Display values", ["Actual Values", "Indexed Growth"],
+            horizontal=True, key="unified_chart_values")
+        display_mode = st.radio("Compare counties", ["Compare All", "Highlight", "Isolate"],
+            horizontal=True, key="unified_chart_display")
+        focus = None
+        if display_mode != "Compare All":
+            focus_options = sorted(chart["county_label"].dropna().unique().tolist())
+            focus = st.selectbox("County to highlight or isolate", focus_options,
+                key=f"unified_chart_focus_{metro_key}_{metric}")
     chart = chart[chart["date"].dt.date.between(start, end)].copy()
     chart[value_col] = pd.to_numeric(chart[value_col], errors="coerce")
     chart = chart.dropna(subset=[value_col])
     if chart.empty:
         st.info("No observations in this date range.")
         return
-    left, right = st.columns([1, 2])
-    with left:
-        value_mode = st.radio("Display values", ["Actual Values", "Indexed Growth"],
-            horizontal=True, key="unified_chart_values")
-    with right:
-        display_mode = st.radio("Compare counties", ["Compare All", "Highlight", "Isolate"],
-            horizontal=True, key="unified_chart_display")
-    focus = None
-    if display_mode != "Compare All":
-        focus_options = sorted(chart["county_label"].dropna().unique().tolist())
-        focus = st.selectbox("County to highlight or isolate", focus_options,
-            key=f"unified_chart_focus_{metro_key}_{metric}")
     y = value_col
     if value_mode == "Indexed Growth":
         chart = chart.sort_values(["county_fips", "date"])
@@ -206,7 +210,7 @@ def render_national_chart(metro_key, selected, metric, metro_name, history_overr
             "<b>%{fullData.name}</b><br>%{x|%b %Y}<br>Value: $%{y:,.0f}"
             "<extra></extra>"
         ))
-    fig.update_layout(height=750, hovermode="closest", dragmode="pan",
+    fig.update_layout(height=480, hovermode="closest", dragmode="pan",
         margin=dict(l=40, r=20, t=60, b=40))
     st.plotly_chart(fig, use_container_width=True, key="unified_chart",
         config={"displayModeBar": True, "displaylogo": False, "doubleClick": "reset"})
