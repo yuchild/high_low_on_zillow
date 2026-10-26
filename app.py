@@ -1,5 +1,7 @@
 from pathlib import Path
 import sys
+import re
+from difflib import SequenceMatcher
 
 ROOT_DIR = Path(__file__).resolve().parent
 SRC_DIR = ROOT_DIR / "src"
@@ -781,8 +783,90 @@ def load_county_registry():
     return registry
 
 
+@st.cache_data
+def load_expanded_registry():
+    path = ROOT_DIR / "geography_registry" / "metro_expanded_counties.csv"
+    if not path.exists():
+        return None
+    frame = pd.read_csv(path, dtype={"metro_key": "string", "county_fips": "string"})
+    frame["county_fips"] = frame["county_fips"].str.zfill(5)
+    return frame
+
+
+@st.cache_data
+def load_adjacent_pool(metric, history=False):
+    if history:
+        filename = ("adjacent_pool_target_metros_home_prices.parquet" if metric == "Home Prices"
+                    else "adjacent_pool_target_metros_rentals.parquet")
+    else:
+        filename = ("adjacent_pool_home_price_kpis.parquet" if metric == "Home Prices"
+                    else "adjacent_pool_rental_kpis.parquet")
+    path = ROOT_DIR / "data" / "processed" / filename
+    if not path.exists():
+        return None
+    frame = pd.read_parquet(path)
+    frame["county_fips"] = frame["county_fips"].astype("string").str.zfill(5)
+    frame["date"] = pd.to_datetime(frame["date"])
+    return frame
+
+
 def metro_label(row):
     return f"#{int(row.population_rank)} · {row.metro_name}, {row.states}"
+
+
+def search_metro_options(registry: pd.DataFrame, query: str, limit: int = 25) -> list[str]:
+    """Rank metro matches by city/name, state code/name, and typo tolerance."""
+    query = query.casefold().strip()
+    if not query:
+        return registry["metro_key"].tolist()
+
+    state_names = {
+        "AL": "alabama", "AK": "alaska", "AZ": "arizona", "AR": "arkansas",
+        "CA": "california", "CO": "colorado", "CT": "connecticut", "DE": "delaware",
+        "DC": "district of columbia", "FL": "florida", "GA": "georgia", "HI": "hawaii",
+        "ID": "idaho", "IL": "illinois", "IN": "indiana", "IA": "iowa",
+        "KS": "kansas", "KY": "kentucky", "LA": "louisiana", "ME": "maine",
+        "MD": "maryland", "MA": "massachusetts", "MI": "michigan", "MN": "minnesota",
+        "MS": "mississippi", "MO": "missouri", "MT": "montana", "NE": "nebraska",
+        "NV": "nevada", "NH": "new hampshire", "NJ": "new jersey", "NM": "new mexico",
+        "NY": "new york", "NC": "north carolina", "ND": "north dakota", "OH": "ohio",
+        "OK": "oklahoma", "OR": "oregon", "PA": "pennsylvania", "RI": "rhode island",
+        "SC": "south carolina", "SD": "south dakota", "TN": "tennessee",
+        "TX": "texas", "UT": "utah", "VT": "vermont", "VA": "virginia",
+        "WA": "washington", "WV": "west virginia", "WI": "wisconsin", "WY": "wyoming",
+    }
+    scored = []
+    for row in registry.itertuples(index=False):
+        name = str(row.metro_name).casefold()
+        cities = [part.strip() for part in name.split("-")]
+        states = str(row.states).upper().split("-")
+        state_tokens = [s.casefold() for s in states]
+        state_full = [state_names.get(s, "") for s in states]
+        terms = cities + [name] + state_tokens + state_full
+        # Strongly prefer direct city/state matches, then partial words, then fuzzy matches.
+        exact = any(query == term for term in terms)
+        starts = any(term.startswith(query) for term in terms)
+        contains = any(query in term for term in terms)
+        word_start = any(word.startswith(query) for term in terms for word in re.split(r"[\s,]+", term))
+        fuzzy = max((SequenceMatcher(None, query, term).ratio() for term in terms if term), default=0)
+        fuzzy_word = max((SequenceMatcher(None, query, word).ratio()
+                          for term in terms for word in re.split(r"[\s,]+", term) if word), default=0)
+        similarity = max(fuzzy, fuzzy_word)
+        if exact:
+            score = 5.0
+        elif starts:
+            score = 4.0
+        elif word_start:
+            score = 3.5
+        elif contains:
+            score = 3.0
+        elif len(query) >= 3 and similarity >= 0.67:
+            score = similarity * 2.0
+        else:
+            continue
+        scored.append((-score, int(row.population_rank), row.metro_key))
+    scored.sort()
+    return [key for _, _, key in scored[:limit]]
 
 
 BAY_COUNTY_FIPS = {
@@ -852,8 +936,30 @@ def render_national_metro_explorer() -> None:
     main_pane, control_pane = st.columns([3.4, 1.25], gap="large")
     with control_pane:
         st.subheader("Explore & filter")
-        metro_key = st.selectbox("Metropolitan area · population rank",
-            metro_options, format_func=lambda k: metro_names[k], key="unified_metro")
+        metro_query = st.text_input(
+            "Search metro by city or state",
+            placeholder="e.g. San Jose, California, Atlnta, TX",
+            key="unified_metro_query",
+            help="Search by city, state abbreviation, full state name, or approximate spelling.",
+        )
+        matching_metros = search_metro_options(registry, metro_query)
+        if not matching_metros:
+            st.info("No matching metros. Try a shorter city or state name.")
+            # Keep the current selection so the dashboard remains usable.
+            matching_metros = [st.session_state["unified_metro"]]
+        if st.session_state["unified_metro"] not in matching_metros:
+            st.session_state["unified_metro"] = matching_metros[0]
+        metro_key = st.selectbox(
+            "Metropolitan area · population rank",
+            matching_metros,
+            format_func=lambda k: metro_names[k],
+            key="unified_metro",
+        )
+        if metro_query.strip():
+            st.caption(f"{len(matching_metros)} matching metro(s) shown · clear search for all 100")
+        geographic_scope = st.radio("Geographic coverage",
+            ["Official metro", "Metro + adjacent counties"],
+            key="unified_geographic_scope")
         metric = st.radio("Housing market", ["Home Prices", "Rentals"],
             format_func=lambda m: "Buying a home" if m == "Home Prices" else "Renting a home",
             key="unified_metric")
@@ -871,8 +977,36 @@ def render_national_metro_explorer() -> None:
     global_latest = df["date"].max()
     metro_name = metro_names[metro_key].split(" · ", 1)[-1]
     expected = county_registry.loc[county_registry["metro_key"] == metro_key].copy()
+    expanded = load_expanded_registry() if geographic_scope == "Metro + adjacent counties" else None
+    if geographic_scope == "Metro + adjacent counties" and expanded is None:
+        with control_pane:
+            st.warning("Run scripts/build_adjacent_counties.py to enable adjacent counties.")
+    if expanded is not None:
+        scope = expanded.loc[expanded["metro_key"] == metro_key, ["county_fips", "coverage_type"]]
+        if not scope.empty:
+            expected = scope.merge(county_registry.drop(columns=["metro_key"], errors="ignore"),
+                on="county_fips", how="left", validate="many_to_one")
+            expected["metro_key"] = metro_key
     expected_count = len(expected)
     metro = df.loc[df["metro_key"] == metro_key].copy()
+    if expanded is not None:
+        pool = load_adjacent_pool(metric)
+        if pool is None:
+            with control_pane:
+                st.warning("Run scripts/build_adjacent_zillow.py to load neighboring Zillow data.")
+        else:
+            missing_fips = set(expected["county_fips"]) - set(metro["county_fips"])
+            other_metros = df.loc[df["county_fips"].isin(missing_fips)].copy()
+            other_metros = other_metros.drop_duplicates(subset=["county_fips"], keep="first")
+            other_metros["metro_key"] = metro_key
+            missing_fips -= set(other_metros["county_fips"])
+            extra = pool.loc[pool["county_fips"].isin(missing_fips)].copy()
+            extra["metro_key"] = metro_key
+            extra = pd.concat([other_metros, extra], ignore_index=True)
+            # Rankings must be recalculated over the selected geographic scope.
+            metro = pd.concat([metro, extra], ignore_index=True)
+            metro["rank_desc"] = metro["value"].rank(method="min", ascending=False).astype("Int64")
+            metro["rank_asc"] = metro["value"].rank(method="min", ascending=True).astype("Int64")
     valid_metros = df.loc[df["value"].notna(), "metro_key"].nunique()
     if metro.empty or metro["value"].notna().sum() == 0:
         with main_pane:
@@ -912,6 +1046,9 @@ def render_national_metro_explorer() -> None:
         metro["state_abbr"] = ""
     metro["county_label"] = metro["county"].astype(str).str.replace(r"\s+County$", "", regex=True).str.strip()
     metro["county_label"] = metro["county_label"] + metro["state_abbr"].map(lambda s: f", {s}" if s else "")
+    if "coverage_type" in metro.columns:
+        metro["county_label"] = metro["county_label"] + metro["coverage_type"].map(
+            lambda t: " · adjacent" if t == "adjacent" else "")
     county_names = metro.set_index("county_fips")["county_label"].to_dict()
     options = sorted(county_names, key=lambda f: (county_names[f], f))
     with control_pane:
@@ -919,7 +1056,7 @@ def render_national_metro_explorer() -> None:
         st.markdown("**County selection**")
         selected_fips = st.multiselect("Counties on map, chart & table",
             options, default=options, format_func=lambda f: county_names[f],
-            key=f"unified_counties_{metro_key}_{metric}")
+            key=f"unified_counties_{metro_key}_{metric}_{'adjacent' if expanded is not None else 'official'}")
     with main_pane:
         st.caption(f"**Data available through {global_latest:%B %Y}** · "
                    f"{valid_metros} of {len(registry)} ranked metros have {metric.lower()} observations. "
@@ -933,7 +1070,7 @@ def render_national_metro_explorer() -> None:
         k3.metric("Average annual change", avg_change("yoy_pct"))
         k4.metric("County data coverage", f"{valid_count} / {expected_count}", f"{coverage:.2f}% covered", delta_color="off")
         st.caption("Dollar values and changes are **unweighted county averages**, not official metro-wide Zillow indices. "
-                   "Coverage uses the official MSA county registry as the denominator; rental coverage may be incomplete.")
+                   "Coverage uses the selected geographic scope as the denominator; rental coverage may be incomplete.")
         if valid_count < expected_count:
             st.caption(f"{expected_count - valid_count} official county equivalents have no current Zillow {metric.lower()} observation.")
 
@@ -944,7 +1081,8 @@ def render_national_metro_explorer() -> None:
         focused["county"] = focused["county_label"]
 
         st.subheader("County housing map")
-        render_national_map(focused, metric, metro_name, change)
+        render_national_map(focused, metric, metro_name, change,
+                            view_key=f"unified_map_{metro_key}_{metric}_{geographic_scope}")
         st.caption("Scroll to zoom and drag to pan. Map colors reflect the selected dollar value or percentage change.")
 
     # A new horizontal row aligns historical chart controls with the chart itself.
@@ -964,6 +1102,19 @@ def render_national_metro_explorer() -> None:
                     key=f"unified_chart_focus_{metro_key}_{metric}")
         try:
             chart_history = load_national_history_for_controls(metric, metro_key)
+            if expanded is not None:
+                pool_history = load_adjacent_pool(metric, history=True)
+                if pool_history is not None:
+                    pool_history = pool_history.loc[pool_history["county_fips"].isin(set(expected["county_fips"]))].copy()
+                    pool_history["metro_key"] = metro_key
+                    chart_history = pd.concat([chart_history, pool_history], ignore_index=True)
+                from national_visuals import load_series
+                all_history = load_series(metric)
+                other_history = all_history.loc[
+                    all_history["county_fips"].isin(set(expected["county_fips"]) - set(chart_history["county_fips"]))
+                ].copy()
+                other_history["metro_key"] = metro_key
+                chart_history = pd.concat([chart_history, other_history], ignore_index=True)
         except (FileNotFoundError, OSError, ValueError, KeyError) as exc:
             chart_history = None
             st.caption(f"Historical date range unavailable: {exc}")
@@ -984,7 +1135,7 @@ def render_national_metro_explorer() -> None:
     st.divider()
     st.subheader("County rankings")
     st.caption(
-        "Value Rank is within counties with Zillow observations in the selected metro. "
+        "Value Rank is within counties with Zillow observations in the selected geographic scope. "
         "Monthly and annual percentage changes describe index movements, "
         "not sales or transaction volumes."
     )

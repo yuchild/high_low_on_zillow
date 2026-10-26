@@ -64,7 +64,7 @@ def map_view_from_features(features):
     return {"lat": center_lat, "lon": center_lon}, zoom
 
 
-def render_national_map(selected, metric, metro_name, map_metric):
+def render_national_map(selected, metric, metro_name, map_metric, view_key="unified_map"):
     col = {"Latest Value": "value", "MoM % Change": "mom_pct",
            "YoY % Change": "yoy_pct"}[map_metric]
     try:
@@ -108,14 +108,31 @@ def render_national_map(selected, metric, metro_name, map_metric):
     valid["tooltip_value"] = valid["value"].map(display_money)
     valid["tooltip_mom"] = valid["mom_pct"].map(display_change)
     valid["tooltip_yoy"] = valid["yoy_pct"].map(display_change)
+    # Low values: teal; midrange: gold; high values: red.
+    # Saturated midpoint remains visible over the OpenStreetMap basemap.
+    teal_gold_red = [
+        [0.00, "#087f8c"],
+        [0.125, "#2497a0"],
+        [0.25, "#51aeb1"],
+        [0.375, "#83b9a0"],
+        [0.50, "#b6bb72"],
+        [0.625, "#d5b34b"],
+        [0.75, "#e3a13e"],
+        [0.875, "#dc7042"],
+        [1.00, "#c83b38"],
+    ]
     fig = choropleth(valid,
         geojson={"type": "FeatureCollection", "features": features},
         locations="county_fips", featureidkey="id", color="map_value",
+        color_continuous_scale=teal_gold_red,
         hover_name="label", labels={"map_value": map_metric},
         custom_data=["label", "tooltip_value", "tooltip_mom", "tooltip_yoy"],
-        **{style_arg: "open-street-map"}, opacity=0.75,
+        **{style_arg: "open-street-map"}, opacity=0.35,
         title=f"{metro_name} — {metric}: {map_metric}")
     unit_label = "Typical home value" if metric == "Home Prices" else "Typical monthly rent"
+    # Subtle county outlines help distinguish neighboring polygons without
+    # competing with road labels or underlying map details.
+    fig.update_traces(marker_line_color="#858b92", marker_line_width=0.55)
     fig.update_traces(hovertemplate=(
         "<b>%{customdata[0]}</b>"
         f"<br>{unit_label}: %{{customdata[1]}}"
@@ -130,7 +147,7 @@ def render_national_map(selected, metric, metro_name, map_metric):
         return
     fig.update_layout(**{("map" if use_maplibre else "mapbox"): dict(center=center, zoom=zoom)}, height=780,
                       margin=dict(l=0, r=0, t=50, b=0))
-    st.plotly_chart(fig, use_container_width=True, key="unified_map",
+    st.plotly_chart(fig, use_container_width=True, key=view_key,
         config={"scrollZoom": True, "displayModeBar": True, "displaylogo": False})
     if map_df["map_value"].isna().any():
         st.caption(f"{map_df['map_value'].isna().sum()} counties have no value for this measure.")
