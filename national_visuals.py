@@ -145,7 +145,7 @@ def render_national_map(selected, metric, metro_name, map_metric, view_key="unif
     except ValueError as exc:
         st.warning(f"Invalid map boundaries: {exc}")
         return
-    fig.update_layout(**{("map" if use_maplibre else "mapbox"): dict(center=center, zoom=zoom)}, height=780,
+    fig.update_layout(**{("map" if use_maplibre else "mapbox"): dict(center=center, zoom=zoom)}, height=590,
                       margin=dict(l=0, r=0, t=50, b=0))
     st.plotly_chart(fig, use_container_width=True, key=view_key,
         config={"scrollZoom": True, "displayModeBar": True, "displaylogo": False})
@@ -227,7 +227,7 @@ def render_national_chart(metro_key, selected, metric, metro_name, history_overr
             "<b>%{fullData.name}</b><br>%{x|%b %Y}<br>Value: $%{y:,.0f}"
             "<extra></extra>"
         ))
-    fig.update_layout(height=480, hovermode="closest", dragmode="pan",
+    fig.update_layout(height=420, hovermode="closest", dragmode="pan",
         margin=dict(l=40, r=20, t=60, b=40))
     st.plotly_chart(fig, use_container_width=True, key="unified_chart",
         config={"displayModeBar": True, "displaylogo": False, "doubleClick": "reset"})

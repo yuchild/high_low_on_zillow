@@ -42,6 +42,22 @@ st.set_page_config(
     layout="wide",
 )
 
+# Small-screen spacing, readable controls and a more compact header.
+st.markdown("""
+<style>
+@media (max-width: 768px) {
+  .block-container { padding: 0.85rem 0.75rem 2rem !important; }
+  h1 { font-size: 1.65rem !important; line-height: 1.2 !important; }
+  h2 { font-size: 1.28rem !important; }
+  h3 { font-size: 1.1rem !important; }
+  [data-testid="stMetricValue"] { font-size: 1.45rem !important; }
+  [data-testid="stMetricLabel"] { font-size: 0.8rem !important; }
+  [data-testid="stVerticalBlock"] { gap: 0.55rem; }
+  div[data-testid="stSelectbox"], div[data-testid="stTextInput"] { max-width: 100%; }
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 @st.cache_data
 def get_app_data():
@@ -932,10 +948,12 @@ def render_national_metro_explorer() -> None:
     if st.session_state.get("unified_metro") not in metro_options:
         st.session_state["unified_metro"] = "cbsa_41860" if "cbsa_41860" in metro_options else metro_options[0]
 
-    # Persistent right-hand control panel; visualizations occupy the wider left pane.
-    main_pane, control_pane = st.columns([3.4, 1.25], gap="large")
+    # Controls come first in document order: Streamlit stacks columns on narrow screens.
+    # This keeps metro search and filters above the map on phones.
+    control_pane, main_pane = st.columns([1.15, 3.35], gap="medium")
     with control_pane:
         st.subheader("Explore & filter")
+        st.caption("Choose a metro, coverage, and housing measure. The map updates automatically.")
         metro_query = st.text_input(
             "Search metro by city or state",
             placeholder="e.g. San Jose, California, Atlnta, TX",
@@ -1085,9 +1103,8 @@ def render_national_metro_explorer() -> None:
                             view_key=f"unified_map_{metro_key}_{metric}_{geographic_scope}")
         st.caption("Scroll to zoom and drag to pan. Map colors reflect the selected dollar value or percentage change.")
 
-    # A new horizontal row aligns historical chart controls with the chart itself.
-    # Both columns start at the same vertical position, directly below the map.
-    chart_pane, chart_control_pane = st.columns([3.4, 1.25], gap="large")
+    # Chart controls precede the chart on narrow screens.
+    chart_control_pane, chart_pane = st.columns([1.15, 3.35], gap="medium")
     with chart_control_pane:
         st.markdown("**Historical chart**")
         value_mode = st.radio("Display values", ["Actual Values", "Indexed Growth"],
@@ -1131,7 +1148,7 @@ def render_national_metro_explorer() -> None:
             chart_options={"date_range": chart_dates, "value_mode": value_mode,
                            "display_mode": display_mode, "focus": focus_label})
 
-    # Full-width, static county table below the map and historical chart.
+    # Full-width county rankings below the map and historical chart.
     st.divider()
     st.subheader("County rankings")
     st.caption(
@@ -1159,8 +1176,12 @@ def render_national_metro_explorer() -> None:
         .map(color_percent, subset=["Monthly Change", "Annual Change"])
         .hide(axis="index")
     )
-    # st.table renders every row as a static table: no internal scrolling or resize control.
-    st.table(styled_table)
+    # Scrollable, responsive rankings avoid a very long phone page and horizontal overflow.
+    st.dataframe(styled_table, use_container_width=True, hide_index=True,
+                 height=min(520, max(200, 35 * (len(table) + 1))))
+    st.download_button("Download county rankings (CSV)",
+        data=table.to_csv(index=False).encode("utf-8"),
+        file_name="county_rankings.csv", mime="text/csv")
 
 
 def main():
