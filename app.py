@@ -54,6 +54,12 @@ st.markdown("""
   [data-testid="stMetricLabel"] { font-size: 0.8rem !important; }
   [data-testid="stVerticalBlock"] { gap: 0.55rem; }
   div[data-testid="stSelectbox"], div[data-testid="stTextInput"] { max-width: 100%; }
+  /* Plotly overlays its modebar on chart titles at narrow viewport widths.
+     Hide only on mobile; desktop retains the full toolbar. */
+  div[data-testid="stPlotlyChart"] .modebar-container,
+  div[data-testid="stPlotlyChart"] .modebar,
+  .stPlotlyChart .modebar-container,
+  .stPlotlyChart .modebar { display: none !important; }
 }
 </style>
 """, unsafe_allow_html=True)
